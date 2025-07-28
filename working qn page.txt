@@ -1,0 +1,716 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Box, Typography, Button, TextField, Card, CardContent, LinearProgress, Radio, RadioGroup, FormControlLabel, FormControl, Checkbox, FormGroup } from '@mui/material';
+import { ArrowBack, ExitToApp, ArrowForward, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import QuestionInput from '../../components/questionnaire/QuestionInput';
+
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  nodes: any[];
+  edges: any[];
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const AssessmentPage = () => {
+  const router = useRouter();
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [isUserSet, setIsUserSet] = useState(true); // Set to true initially
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+    // Auto-set user as ready immediately to skip setup page
+    setUserName('Sarah Johnson');
+    setUserEmail('');
+    setIsUserSet(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      loadMostRecentTemplate();
+    }
+  }, [mounted]);
+
+  const loadMostRecentTemplate = () => {
+    try {
+      const templates = JSON.parse(localStorage.getItem('templateDrafts') || '[]');
+      const completedTemplates = templates.filter((t: Template) => t.status === 'Completed');
+      
+      if (completedTemplates.length === 0) {
+        alert('No completed templates found. Please create and complete a template first.');
+        if (mounted) {
+          router.push('/dashboard');
+        }
+        return;
+      }
+      
+      const mostRecentTemplate = completedTemplates.sort((a: Template, b: Template) => 
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )[0];
+      
+      console.log('📋 Loading most recent template for assessment:', mostRecentTemplate);
+      console.log('🔍 Template structure:', {
+        nodes: mostRecentTemplate.nodes?.length || 0,
+        edges: mostRecentTemplate.edges?.length || 0,
+        nodeTypes: mostRecentTemplate.nodes?.map(n => n.type) || [],
+        questionNodes: mostRecentTemplate.nodes?.filter(n => n.type === 'questionNode') || []
+      });
+      
+      const questionNodes = mostRecentTemplate.nodes?.filter(node => 
+        node.type === 'questionNode' && node.data?.question
+      ) || [];
+      
+      console.log('🔍 Found question nodes:', questionNodes.length);
+      questionNodes.forEach((node, index) => {
+        console.log(`Question ${index + 1}:`, {
+          id: node.id,
+          question: node.data?.question,
+          questionType: node.data?.questionType,
+          options: node.data?.options,
+          isRequired: node.data?.isRequired
+        });
+      });
+      
+      setTemplate(mostRecentTemplate);
+      setLoading(false);
+      
+    } catch (error) {
+      console.error('❌ Error loading template:', error);
+      alert('Failed to load template');
+      if (mounted) {
+        router.push('/dashboard');
+      }
+    }
+  };
+
+  const handleUserSetup = () => {
+    if (!userName.trim()) {
+      alert('Please enter your name');
+      return;
+    }
+    setIsUserSet(true);
+  };
+
+  const handleAnswerChange = (questionId: string, answer: any) => {
+    console.log('📝 Answer changing:', { questionId, answer });
+    setAnswers(prev => {
+      const newAnswers = { ...prev, [questionId]: answer };
+      console.log('📊 Updated answers:', newAnswers);
+      return newAnswers;
+    });
+    
+    // Force re-render to show next questions in the flow
+    setTimeout(() => {
+      const visibleQuestions = getVisibleQuestions();
+      console.log('🔄 Visible questions after answer:', visibleQuestions.length);
+    }, 100);
+  };
+
+  const handleNextSection = () => {
+    const sections = getSections();
+    if (currentSectionIndex < sections.length - 1) {
+      setCurrentSectionIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousSection = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    // Save draft logic
+    console.log('Saving draft...', answers);
+  };
+
+  const handleSubmitAssessment = async () => {
+    // Submit assessment logic
+    console.log('Submitting assessment...', answers);
+  };
+
+  const getVisibleQuestions = () => {
+    if (!template?.nodes || !template?.edges) {
+      return [];
+    }
+    
+    const questions = [];
+    const processedNodes = new Set();
+    
+    // Helper function to get all sub-questions in a flat structure
+    const getAllSubQuestions = (parentId, rootQuestionNumber) => {
+      const subQuestions = [];
+      const queue = [{ nodeId: parentId, level: 2 }];
+      
+      while (queue.length > 0) {
+        const { nodeId, level } = queue.shift();
+        const parentAnswer = answers[nodeId];
+        
+        if (!parentAnswer) continue;
+        
+        // Find edges from this node
+        const outgoingEdges = template.edges.filter(edge => edge.source === nodeId);
+        
+        outgoingEdges.forEach(edge => {
+          const shouldFollow = checkEdgeCondition(edge, parentAnswer);
+          
+          if (shouldFollow) {
+            const subQuestionNode = template.nodes.find(n => n.id === edge.target);
+            if (subQuestionNode && subQuestionNode.type === 'questionNode' && !processedNodes.has(subQuestionNode.id)) {
+              const subQuestionIndex = subQuestions.length + 1;
+              
+              const subQuestion = {
+                ...subQuestionNode,
+                level: level,
+                parentId: nodeId,
+                questionNumber: `${rootQuestionNumber}.${subQuestionIndex}`
+              };
+              
+              subQuestions.push(subQuestion);
+              processedNodes.add(subQuestionNode.id);
+              
+              // Add this node to queue for further processing
+              queue.push({ nodeId: subQuestionNode.id, level: level + 1 });
+            }
+          }
+        });
+      }
+      
+      return subQuestions;
+    };
+    
+    // Get all main questions (directly connected to sections)
+    const sectionNodes = template.nodes.filter(node => node.type === 'sectionNode');
+    
+    sectionNodes.forEach(section => {
+      const sectionEdges = template.edges.filter(edge => edge.source === section.id);
+      
+      sectionEdges.forEach(edge => {
+        const questionNode = template.nodes.find(n => n.id === edge.target);
+        if (questionNode && questionNode.type === 'questionNode' && !processedNodes.has(questionNode.id)) {
+          const mainQuestionNumber = questions.filter(q => q.level === 1).length + 1;
+          
+          const mainQuestion = {
+            ...questionNode,
+            level: 1,
+            parentId: null,
+            questionNumber: mainQuestionNumber
+          };
+          
+          questions.push(mainQuestion);
+          processedNodes.add(questionNode.id);
+          
+          // Get all sub-questions for this main question (flattened)
+          const subQuestions = getAllSubQuestions(questionNode.id, mainQuestionNumber);
+          questions.push(...subQuestions);
+        }
+      });
+    });
+    
+    return questions;
+  };
+
+  const checkEdgeCondition = (edge: any, answer: any) => {
+    console.log('🔍 Checking edge condition:', {
+      edge: edge,
+      answer: answer,
+      edgeLabel: edge.label,
+      edgeData: edge.data,
+      sourceHandle: edge.sourceHandle
+    });
+    
+    let edgeCondition = null;
+    
+    // For text input questions, check if there's any text
+    if (edge.sourceHandle === 'text-output' || edge.data?.condition === 'text-input') {
+      return answer && answer.trim() !== '';
+    }
+    
+    // For radio/multiple choice options
+    if (edge.label) {
+      edgeCondition = edge.label;
+    } else if (edge.data?.optionText) {
+      edgeCondition = edge.data.optionText;
+    } else if (edge.sourceHandle) {
+      const handleMatch = edge.sourceHandle.match(/option-(\d+)/);
+      if (handleMatch) {
+        const sourceNode = template.nodes.find(n => n.id === edge.source);
+        if (sourceNode?.data?.options) {
+          const optionIndex = parseInt(handleMatch[1]);
+          edgeCondition = sourceNode.data.options[optionIndex];
+        }
+      }
+    }
+    
+    if (!edgeCondition) {
+      return false;
+    }
+    
+    let result = false;
+    
+    if (Array.isArray(answer)) {
+      result = answer.includes(edgeCondition);
+    } else {
+      result = answer === edgeCondition;
+    }
+    
+    console.log(`✅ Condition check result: ${result} (${answer} === ${edgeCondition})`);
+    return result;
+  };
+
+  const getQuestionNodes = () => {
+    if (!template?.nodes) return [];
+    
+    // Use flow logic to determine visible questions
+    const visibleQuestions = getVisibleQuestions();
+    
+    // Filter to ensure we only return valid question nodes
+    return visibleQuestions.filter(node => 
+      node.data && 
+      node.data.question && 
+      node.data.questionType &&
+      ['radio', 'checkbox', 'text-input', 'multiple-choice', 'yes-no'].includes(node.data.questionType)
+    );
+  };
+
+  const getSections = () => {
+    if (!template?.nodes) return [];
+    
+    const sections = template.nodes
+      .filter(node => node.type === 'sectionNode' && node.data?.sectionName)
+      .sort((a, b) => parseInt(a.id.replace('section-', '')) - parseInt(b.id.replace('section-', '')));
+    
+    return sections.map(section => ({
+      ...section,
+      questions: getQuestionsForSection(section.id)
+    }));
+  };
+
+  const getQuestionsForSection = (sectionId: string) => {
+    if (!template?.nodes || !template?.edges) return [];
+    
+    // Find all edges that start from this specific section
+    const sectionEdges = template.edges.filter(edge => edge.source === sectionId);
+    const directQuestionIds = sectionEdges.map(edge => edge.target);
+    
+    // Get only question nodes directly connected to this section
+    const directQuestions = template.nodes.filter(node => 
+      directQuestionIds.includes(node.id) &&
+      node.type === 'questionNode' &&
+      node.data?.question &&
+      ['radio', 'checkbox', 'text-input', 'multiple-choice', 'yes-no'].includes(node.data.questionType)
+    );
+    
+    // Now get all sub-questions that flow from these direct questions
+    const allSectionQuestions = [];
+    const processedNodes = new Set();
+    
+    const getSubQuestions = (questionId) => {
+      if (processedNodes.has(questionId)) return [];
+      processedNodes.add(questionId);
+      
+      const subQuestions = [];
+      const questionAnswer = answers[questionId];
+      
+      if (!questionAnswer) return [];
+      
+      // Find edges from this question
+      const outgoingEdges = template.edges.filter(edge => edge.source === questionId);
+      
+      outgoingEdges.forEach(edge => {
+        const shouldFollow = checkEdgeCondition(edge, questionAnswer);
+        
+        if (shouldFollow) {
+          const subQuestionNode = template.nodes.find(n => n.id === edge.target);
+          if (subQuestionNode && subQuestionNode.type === 'questionNode') {
+            subQuestions.push(subQuestionNode);
+            // Recursively get sub-questions of this sub-question
+            subQuestions.push(...getSubQuestions(subQuestionNode.id));
+          }
+        }
+      });
+      
+      return subQuestions;
+    };
+    
+    // Add direct questions
+    directQuestions.forEach(question => {
+      allSectionQuestions.push(question);
+      // Add all sub-questions that flow from this direct question
+      allSectionQuestions.push(...getSubQuestions(question.id));
+    });
+    
+    return allSectionQuestions;
+  };
+
+  const handleSectionChange = (sectionIndex: number) => {
+    setCurrentSectionIndex(sectionIndex);
+  };
+
+  const calculateWeightedProgress = () => {
+    const sections = getSections();
+    if (sections.length === 0) return 0;
+    
+    let totalWeightedCompletion = 0;
+    let totalWeight = 0;
+    
+    sections.forEach(section => {
+      const sectionWeight = section.data.weight || 1;
+      const sectionQuestions = section.questions;
+      
+      if (sectionQuestions.length === 0) {
+        totalWeight += sectionWeight;
+        return;
+      }
+      
+      // Calculate completion percentage for this section
+      const answeredQuestions = sectionQuestions.filter(q => answers[q.id]);
+      const sectionCompletion = (answeredQuestions.length / sectionQuestions.length) * 100;
+      
+      // Add to weighted totals
+      totalWeightedCompletion += sectionCompletion * sectionWeight;
+      totalWeight += sectionWeight;
+      
+      console.log(`📊 Section "${section.data.sectionName}":`, {
+        weight: sectionWeight,
+        completion: sectionCompletion,
+        weightedValue: sectionCompletion * sectionWeight,
+        answeredQuestions: answeredQuestions.length,
+        totalQuestions: sectionQuestions.length
+      });
+    });
+    
+    const weightedAverage = totalWeight > 0 ? totalWeightedCompletion / totalWeight : 0;
+    
+    console.log('🎯 Weighted Progress Calculation:', {
+      totalWeightedCompletion,
+      totalWeight,
+      weightedAverage: Math.round(weightedAverage * 100) / 100
+    });
+    
+    return Math.round(weightedAverage);
+  };
+
+  useEffect(() => {
+    if (!template?.nodes || !template?.edges || !isUserSet) return;
+    
+    console.log('🔄 Recalculating visible questions...');
+    console.log('📋 Template nodes:', template.nodes.length);
+    console.log('� Template edges:', template.edges.length);
+    console.log('📝 Current answers:', answers);
+    
+    const visibleQuestions = getQuestionNodes();
+    console.log('👁️ Visible questions:', visibleQuestions.map(q => ({
+      id: q.id,
+      question: q.data?.question,
+      type: q.data?.questionType,
+      hasAnswer: !!answers[q.id]
+    })));
+    
+    // If current question index is beyond visible questions, adjust it
+    if (currentQuestionIndex >= visibleQuestions.length && visibleQuestions.length > 0) {
+      console.log(`📍 Adjusting question index from ${currentQuestionIndex} to ${visibleQuestions.length - 1}`);
+      setCurrentQuestionIndex(visibleQuestions.length - 1);
+    }
+  }, [answers, template, isUserSet, currentQuestionIndex]);
+
+  if (!mounted) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout
+        headerProps={{
+          title: "COMPANY LOGO",
+          showSearch: false,
+          userInfo: {
+            name: "Loading...",
+            role: "Assessment"
+          }
+        }}
+      >
+        <Box sx={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: '#fafafa'
+        }}>
+          <Card sx={{ p: 4, textAlign: 'center', maxWidth: 400 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, color: '#6b7280' }}>
+                Loading Assessment...
+              </Typography>
+              <LinearProgress sx={{ mt: 2 }} />
+            </CardContent>
+          </Card>
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  const questionNodes = getQuestionNodes();
+  const currentQuestion = questionNodes[currentQuestionIndex];
+  const progress = calculateWeightedProgress();
+  const isLastQuestion = currentQuestionIndex === questionNodes.length - 1;
+
+  if (!currentQuestion) {
+    return (
+      <DashboardLayout
+        headerProps={{
+          title: "COMPANY LOGO",
+          showSearch: false,
+          userInfo: {
+            name: userName,
+            role: "Assessment"
+          }
+        }}
+      >
+        <Box sx={{ 
+          minHeight: '100vh', 
+          backgroundColor: '#fafafa',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Card sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" color="error">
+              No questions found in this template
+            </Typography>
+            <Button 
+              onClick={() => router.push('/dashboard')}
+              sx={{ mt: 2 }}
+            >
+              Back to Dashboard
+            </Button>
+          </Card>
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout
+      headerProps={{
+        title: "COMPANY LOGO",
+        showSearch: true,
+        userInfo: {
+          name: "Sarah Johnson",
+          role: "Admin"
+        }
+      }}
+    >
+      <Box sx={{ 
+        height: '100%',
+        backgroundColor: '#f8fafc',
+        overflow: 'auto'
+      }}>
+        {/* Assessment Header */}
+        <Box sx={{ 
+          backgroundColor: 'white', 
+          borderBottom: '1px solid #e5e7eb',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10
+        }}>
+          <Box sx={{ 
+            px: 4, 
+            py: 3,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start'
+          }}>
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 600, 
+                  color: '#111827',
+                  fontSize: '24px'
+                }}>
+                  New Assessment
+                </Typography>
+                <Box sx={{ 
+                  width: 16, 
+                  height: 16, 
+                  backgroundColor: '#3b82f6',
+                  borderRadius: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Typography sx={{ color: 'white', fontSize: '10px', fontWeight: 'bold' }}>
+                    ✓
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography sx={{ 
+                color: '#6b7280', 
+                fontSize: '14px'
+              }}>
+                {template?.name} - Started on {new Date().toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ 
+              backgroundColor: '#fef3c7',
+              color: '#d97706',
+              px: 3,
+              py: 1,
+              fontSize: '14px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+               In Progress - {progress}% 
+            </Box>
+          </Box>
+
+          {/* Progress Bar */}
+          <Box sx={{ px: 4, pb: 0 }}>
+            <LinearProgress 
+              variant="determinate" 
+              value={progress}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: '#e5e7eb',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: '#3b82f6',
+                  borderRadius: 3
+                }
+              }}
+            />
+          </Box>
+
+          {/* Section Navigation */}
+          <Box sx={{ 
+            px: 4, 
+            py: 3,
+            display: 'flex',
+            gap: 0,
+            borderBottom: '1px solid #e5e7eb'
+          }}>
+            {getSections().map((section, index) => {
+              const isActive = index === currentSectionIndex;
+              
+              return (
+                <Box
+                  key={section.id}
+                  onClick={() => handleSectionChange(index)}
+                  sx={{
+                    flex: 1,
+                    textAlign: 'center',
+                    pb: 2,
+                    borderBottom: isActive ? '3px solid #3b82f6' : '3px solid transparent',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Typography sx={{
+                    fontSize: '14px',
+                    fontWeight: isActive ? 600 : 400,
+                    color: isActive ? '#3b82f6' : '#6b7280'
+                  }}>
+                    {section.data.sectionName}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
+
+        {/* Questions for Current Section */}
+        <Box sx={{ px: 4, py: 3 }}>
+          {getSections()[currentSectionIndex]?.questions.map((question, qIndex) => (
+            <Box key={question.id} sx={{ mb: 4 }}>
+              <Typography sx={{ 
+                fontSize: '16px', 
+                fontWeight: 600, 
+                mb: 2,
+                color: '#1f2937'
+              }}>
+                {qIndex + 1}. {question.data.question}
+                {question.data.isRequired && <span style={{ color: '#ef4444' }}>*</span>}
+              </Typography>
+
+              {/* Question Input Component */}
+              <QuestionInput
+                question={question}
+                answer={answers[question.id]}
+                onAnswerChange={(answer) => handleAnswerChange(question.id, answer)}
+              />
+            </Box>
+          ))}
+        </Box>
+
+        {/* Navigation Buttons */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mt: 4,
+          pt: 3,
+          borderTop: '1px solid #e5e7eb'
+        }}>
+          <Button
+            onClick={handlePreviousSection}
+            disabled={currentSectionIndex === 0}
+            variant="outlined"
+            startIcon={<ArrowBack />}
+          >
+            Previous Section
+          </Button>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              onClick={handleSaveDraft}
+              variant="outlined"
+              color="warning"
+            >
+              Save Draft
+            </Button>
+
+            {currentSectionIndex === getSections().length - 1 ? (
+              <Button
+                onClick={handleSubmitAssessment}
+                variant="contained"
+                color="primary"
+              >
+                Submit Assessment
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNextSection}
+                variant="contained"
+                endIcon={<ArrowForward />}
+              >
+                Next Section
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    </DashboardLayout>
+  );
+};
+
+export default AssessmentPage;   
+
