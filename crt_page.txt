@@ -1,0 +1,957 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  TextField, 
+  Card, 
+  CardContent, 
+  LinearProgress, 
+  Radio, 
+  RadioGroup, 
+  FormControlLabel, 
+  FormControl, 
+  Checkbox, 
+  FormGroup,
+  Tabs,
+  Tab
+} from '@mui/material';
+import { 
+  ArrowBack, 
+  ExitToApp, 
+  ArrowForward, 
+  ArrowBack as ArrowBackIcon,
+  CheckCircle,
+  Save as SaveIcon,
+  Done as DoneIcon
+} from '@mui/icons-material';
+import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
+import DashboardLayout from '../../components/dashboard/DashboardLayout';
+import QuestionInput from '../../components/questionnaire/QuestionInput';
+
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  nodes: any[];
+  edges: any[];
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const AssessmentPage = () => {
+  const router = useRouter();
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [isUserSet, setIsUserSet] = useState(true); // Set to true initially
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+    // Auto-set user as ready immediately to skip setup page
+    setUserName('Sarah Johnson');
+    setUserEmail('');
+    setIsUserSet(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      loadMostRecentTemplate();
+    }
+  }, [mounted]);
+
+  const loadMostRecentTemplate = () => {
+    try {
+      const templates = JSON.parse(localStorage.getItem('templateDrafts') || '[]');
+      const completedTemplates = templates.filter((t: Template) => t.status === 'Completed');
+      
+      if (completedTemplates.length === 0) {
+        alert('No completed templates found. Please create and complete a template first.');
+        if (mounted) {
+          router.push('/dashboard');
+        }
+        return;
+      }
+      
+      const mostRecentTemplate = completedTemplates.sort((a: Template, b: Template) => 
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )[0];
+      
+      console.log('📋 Loading most recent template for assessment:', mostRecentTemplate);
+      console.log('🔍 Template structure:', {
+        nodes: mostRecentTemplate.nodes?.length || 0,
+        edges: mostRecentTemplate.edges?.length || 0,
+        nodeTypes: mostRecentTemplate.nodes?.map(n => n.type) || [],
+        questionNodes: mostRecentTemplate.nodes?.filter(n => n.type === 'questionNode') || []
+      });
+      
+      // Debug edges structure
+      console.log('🔗 Edges structure:', mostRecentTemplate.edges);
+      mostRecentTemplate.edges?.forEach((edge, index) => {
+        console.log(`Edge ${index}:`, {
+          source: edge.source,
+          target: edge.target,
+          data: edge.data,
+          label: edge.label
+        });
+      });
+      
+      const questionNodes = mostRecentTemplate.nodes?.filter(node => 
+        node.type === 'questionNode' && node.data?.question
+      ) || [];
+      
+      console.log('🔍 Found question nodes:', questionNodes.length);
+      questionNodes.forEach((node, index) => {
+        console.log(`Question ${index + 1}:`, {
+          id: node.id,
+          question: node.data?.question,
+          questionType: node.data?.questionType,
+          options: node.data?.options,
+          isRequired: node.data?.isRequired
+        });
+      });
+      
+      setTemplate(mostRecentTemplate);
+      setLoading(false);
+      
+    } catch (error) {
+      console.error('❌ Error loading template:', error);
+      alert('Failed to load template');
+      if (mounted) {
+        router.push('/dashboard');
+      }
+    }
+  };
+
+  const handleUserSetup = () => {
+    if (!userName.trim()) {
+      alert('Please enter your name');
+      return;
+    }
+    setIsUserSet(true);
+  };
+
+  const handleAnswerChange = (questionId: string, value: any) => {
+    console.log('🔄 Answer changing:', { questionId, value });
+    
+    setAnswers(prev => {
+      const newAnswers = { ...prev, [questionId]: value };
+      console.log('📝 New answers state:', newAnswers);
+      
+      // Debug: Check for outgoing edges from this question
+      if (template?.edges) {
+        const outgoingEdges = template.edges.filter(edge => edge.source === questionId);
+        console.log(`🔗 Found ${outgoingEdges.length} outgoing edges from question ${questionId}:`, outgoingEdges);
+        
+        outgoingEdges.forEach(edge => {
+          console.log('🔍 Edge details:', {
+            source: edge.source,
+            target: edge.target,
+            data: edge.data,
+            label: edge.label,
+            shouldFollow: checkEdgeCondition(edge, value)
+          });
+        });
+      }
+      
+      return newAnswers;
+    });
+  };
+
+  const handleNextSection = () => {
+    const sections = getSections();
+    if (currentSectionIndex < sections.length - 1) {
+      setCurrentSectionIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePreviousSection = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    // Save draft logic
+    console.log('Saving draft...', answers);
+  };
+
+  const handleSubmitAssessment = async () => {
+    // Submit assessment logic
+    console.log('Submitting assessment...', answers);
+  };
+
+  // Simplified getVisibleQuestions for debugging
+  const getVisibleQuestions = () => {
+    if (!template?.nodes || !template?.edges) {
+      console.log('❌ No template nodes or edges');
+      return [];
+    }
+    
+    console.log('🔄 Getting visible questions, current answers:', answers);
+    
+    const allQuestions = [];
+    const processedNodes = new Set();
+    
+    // Get all question nodes first
+    const questionNodes = template.nodes.filter(node => node.type === 'questionNode');
+    console.log('📋 All question nodes:', questionNodes.length);
+    
+    // Process each question and check for sub-questions
+    questionNodes.forEach(questionNode => {
+      if (processedNodes.has(questionNode.id)) return;
+      
+      // Check if this is a main question (connected to a section)
+      const isMainQuestion = template.edges.some(edge => 
+        edge.target === questionNode.id && 
+        template.nodes.find(n => n.id === edge.source)?.type === 'sectionNode'
+      );
+      
+      if (isMainQuestion) {
+        processedNodes.add(questionNode.id);
+        allQuestions.push({
+          ...questionNode,
+          level: 0,
+          sectionId: template.edges.find(e => e.target === questionNode.id)?.source
+        });
+        
+        // Check for sub-questions
+        const subQuestions = getSubQuestions(questionNode.id, 1, processedNodes);
+        allQuestions.push(...subQuestions);
+      }
+    });
+    
+    console.log('📋 Final visible questions:', allQuestions.length);
+    return allQuestions;
+  };
+  
+  // Helper function to get sub-questions recursively
+  const getSubQuestions = (parentId: string, level: number, processedNodes: Set<string>): any[] => {
+    const subQuestions = [];
+    const parentAnswer = answers[parentId];
+    
+    console.log(`🔍 Getting sub-questions for ${parentId}, answer:`, parentAnswer);
+    
+    if (!parentAnswer) {
+      console.log('❌ No answer for parent question');
+      return subQuestions;
+    }
+    
+    // Find edges from this node
+    const outgoingEdges = template?.edges?.filter(edge => edge.source === parentId) || [];
+    console.log(`🔗 Found ${outgoingEdges.length} outgoing edges from ${parentId}`);
+    
+    outgoingEdges.forEach(edge => {
+      const shouldFollow = checkEdgeCondition(edge, parentAnswer);
+      console.log(`🔍 Edge ${edge.source} -> ${edge.target}, should follow:`, shouldFollow);
+      
+      if (shouldFollow) {
+        const subQuestionNode = template?.nodes.find(n => n.id === edge.target);
+        if (subQuestionNode && subQuestionNode.type === 'questionNode' && !processedNodes.has(subQuestionNode.id)) {
+          processedNodes.add(subQuestionNode.id);
+          
+          const subQuestion = {
+            ...subQuestionNode,
+            level,
+            parentAnswer: Array.isArray(parentAnswer) ? parentAnswer.join(', ') : parentAnswer,
+            sectionId: template?.edges.find(e => e.target === parentId)?.source
+          };
+          
+          subQuestions.push(subQuestion);
+          console.log(`✅ Added sub-question: ${subQuestion.data?.question}`);
+          
+          // Recursively get sub-sub-questions
+          const nestedSubQuestions = getSubQuestions(subQuestionNode.id, level + 1, processedNodes);
+          subQuestions.push(...nestedSubQuestions);
+        }
+      }
+    });
+    
+    return subQuestions;
+  };
+
+  // Enhanced checkEdgeCondition to handle different edge data formats
+  const checkEdgeCondition = (edge: any, answer: any): boolean => {
+    console.log('🔍 Checking edge condition:', {
+      edge: edge,
+      answer: answer,
+      edgeData: edge.data,
+      edgeLabel: edge.label
+    });
+    
+    // If no condition data, check if edge label matches answer (fallback)
+    if (!edge.data?.condition) {
+      console.log('⚠️ No condition data, checking label match');
+      const labelMatch = edge.label === answer;
+      console.log('🏷️ Label match result:', { edgeLabel: edge.label, answer, match: labelMatch });
+      return labelMatch;
+    }
+    
+    const condition = edge.data.condition;
+    console.log('📋 Condition details:', condition);
+    
+    // Handle case where condition is just a string (like 'radio')
+    if (typeof condition === 'string') {
+      console.log('🔧 Condition is string, checking label match');
+      const labelMatch = edge.label === answer;
+      console.log('🏷️ String condition label match:', { edgeLabel: edge.label, answer, match: labelMatch });
+      return labelMatch;
+    }
+    
+    // Handle proper condition objects
+    if (typeof condition === 'object') {
+      // Handle different condition types
+      if (condition.type === 'option-selected') {
+        if (Array.isArray(answer)) {
+          const result = answer.includes(condition.value);
+          console.log('✅ Array option check:', { answer, conditionValue: condition.value, result });
+          return result;
+        }
+        const result = answer === condition.value;
+        console.log('✅ Single option check:', { answer, conditionValue: condition.value, result });
+        return result;
+      }
+      
+      if (condition.type === 'multi-select') {
+        if (!Array.isArray(answer)) {
+          console.log('❌ Multi-select check failed: answer not array');
+          return false;
+        }
+        
+        if (condition.value === 'Any 2+ Selected') {
+          const result = answer.length >= 2;
+          console.log('✅ Any 2+ check:', { answerLength: answer.length, result });
+          return result;
+        }
+        if (condition.value === 'All Selected') {
+          const questionNode = template?.nodes.find(n => n.id === edge.source);
+          const result = answer.length === questionNode?.data?.options?.length;
+          console.log('✅ All selected check:', { 
+            answerLength: answer.length, 
+            totalOptions: questionNode?.data?.options?.length, 
+            result 
+          });
+          return result;
+        }
+      }
+    }
+    
+    // Fallback: check if edge has optionText that matches answer
+    if (edge.data?.optionText) {
+      const optionMatch = edge.data.optionText === answer;
+      console.log('🔧 Checking optionText match:', { optionText: edge.data.optionText, answer, match: optionMatch });
+      return optionMatch;
+    }
+    
+    console.log('❌ No condition matched');
+    return false;
+  };
+
+  const getQuestionNodes = () => {
+    if (!template?.nodes) return [];
+    
+    // Use flow logic to determine visible questions
+    const visibleQuestions = getVisibleQuestions();
+    
+    // Filter to ensure we only return valid question nodes
+    return visibleQuestions.filter(node => 
+      node.data && 
+      node.data.question && 
+      node.data.questionType &&
+      ['radio', 'checkbox', 'text-input', 'multiple-choice', 'yes-no'].includes(node.data.questionType)
+    );
+  };
+
+  const getSections = () => {
+    if (!template?.nodes) return [];
+    
+    const sections = template.nodes
+      .filter(node => node.type === 'sectionNode' && node.data?.sectionName)
+      .sort((a, b) => parseInt(a.id.replace('section-', '')) - parseInt(b.id.replace('section-', '')));
+    
+    return sections.map(section => ({
+      ...section,
+      questions: getQuestionsForSection(section.id)
+    }));
+  };
+
+  const getSectionStatus = (sectionIndex: number) => {
+    const sections = getSections();
+    if (sectionIndex >= sections.length) return 'pending';
+    
+    const section = sections[sectionIndex];
+    const sectionQuestions = getQuestionsForSection(section.id);
+    
+    if (sectionQuestions.length === 0) return 'completed';
+    
+    const answeredQuestions = sectionQuestions.filter(q => answers[q.id]);
+    
+    if (answeredQuestions.length === sectionQuestions.length) return 'completed';
+    if (answeredQuestions.length > 0) return 'in-progress';
+    return 'pending';
+  };
+
+  const getQuestionsForSection = (sectionId: string) => {
+    if (!template?.edges || !template?.nodes) return [];
+    
+    const sectionEdges = template.edges.filter(edge => edge.source === sectionId);
+    return sectionEdges.map(edge => 
+      template.nodes.find(node => node.id === edge.target && node.type === 'questionNode')
+    ).filter(Boolean);
+  };
+
+  const renderTabIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <DoneIcon sx={{ fontSize: 16, mr: 0.5, color: '#22c55e' }} />;
+      case 'in-progress':
+        return <HourglassBottomIcon sx={{ fontSize: 16, mr: 0.5, color: '#f59e0b' }} />;
+      default:
+        return null;
+    }
+  };
+
+  const getTabStyles = (sectionIndex: number) => {
+    const status = getSectionStatus(sectionIndex);
+    const isSelected = currentSectionIndex === sectionIndex;
+    
+    if (isSelected) {
+      return {
+        backgroundColor: '#3b82f6',
+        color: 'white',
+        borderBottom: '3px solid #3b82f6',
+        '&.Mui-selected': {
+          color: 'white',
+        }
+      };
+    }
+    
+    switch (status) {
+      case 'completed':
+        return {
+          color: '#22bb66',
+          '&:hover': {
+            backgroundColor: '#e7faf0',
+          }
+        };
+      case 'in-progress':
+        return {
+          color: '#de9700',
+          '&:hover': {
+            backgroundColor: '#fff6d8',
+          }
+        };
+      default:
+        return {
+          color: '#6b7280',
+          '&:hover': {
+            backgroundColor: '#f3f4f6',
+          }
+        };
+    }
+  };
+
+  const handleSectionChange = (sectionIndex: number) => {
+    setCurrentSectionIndex(sectionIndex);
+  };
+
+  const calculateWeightedProgress = () => {
+    const sections = getSections();
+    if (sections.length === 0) return 0;
+    
+    let totalWeightedCompletion = 0;
+    let totalWeight = 0;
+    
+    sections.forEach(section => {
+      const sectionWeight = section.data.weight || 1;
+      const sectionQuestions = getQuestionsForSection(section.id);
+      
+      if (sectionQuestions.length === 0) {
+        totalWeight += sectionWeight;
+        return;
+      }
+      
+      // Calculate completion percentage for this section
+      const answeredQuestions = sectionQuestions.filter(q => answers[q.id]);
+      const sectionCompletion = answeredQuestions.length / sectionQuestions.length;
+      
+      // Add to weighted totals
+      totalWeightedCompletion += sectionCompletion * sectionWeight;
+      totalWeight += sectionWeight;
+      
+      console.log(`📊 Section "${section.data.sectionName}":`, {
+        weight: sectionWeight,
+        completion: Math.round(sectionCompletion * 100),
+        weightedValue: sectionCompletion * sectionWeight,
+        answeredQuestions: answeredQuestions.length,
+        totalQuestions: sectionQuestions.length
+      });
+    });
+    
+    const weightedAverage = totalWeight > 0 ? totalWeightedCompletion / totalWeight : 0;
+    
+    console.log('🎯 Weighted Progress Calculation:', {
+      totalWeightedCompletion: Math.round(totalWeightedCompletion * 100) / 100,
+      totalWeight,
+      weightedAverage: Math.round(weightedAverage * 100)
+    });
+    
+    return Math.round(weightedAverage * 100);
+  };
+
+  useEffect(() => {
+    if (!template?.nodes || !template?.edges || !isUserSet) return;
+    
+    console.log('🔄 Recalculating visible questions...');
+    console.log('📋 Template nodes:', template.nodes.length);
+    console.log('🔗 Template edges:', template.edges.length);
+    console.log('📝 Current answers:', answers);
+    
+    const visibleQuestions = getVisibleQuestions();
+    console.log('👁️ Visible questions:', visibleQuestions.map(q => ({
+      id: q.id,
+      question: q.data?.question,
+      type: q.data?.questionType,
+      hasAnswer: !!answers[q.id]
+    })));
+  }, [answers, template, isUserSet]);
+
+  if (!mounted) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout
+        headerProps={{
+          title: "COMPANY LOGO",
+          showSearch: false,
+          userInfo: {
+            name: "Loading...",
+            role: "Assessment"
+          }
+        }}
+      >
+        <Box sx={{ 
+          minHeight: '100vh', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: '#fafafa'
+        }}>
+          <Card sx={{ p: 4, textAlign: 'center', maxWidth: 400 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, color: '#6b7280' }}>
+                Loading Assessment...
+              </Typography>
+              <LinearProgress sx={{ mt: 2 }} />
+            </CardContent>
+          </Card>
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  const questionNodes = getQuestionNodes();
+  const currentQuestion = questionNodes[currentQuestionIndex];
+  const progress = calculateWeightedProgress();
+  const isLastQuestion = currentQuestionIndex === questionNodes.length - 1;
+
+  if (!currentQuestion) {
+    return (
+      <DashboardLayout
+        headerProps={{
+          title: "COMPANY LOGO",
+          showSearch: false,
+          userInfo: {
+            name: userName,
+            role: "Assessment"
+          }
+        }}
+      >
+        <Box sx={{ 
+          minHeight: '100vh', 
+          backgroundColor: '#fafafa',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <Card sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" color="error">
+              No questions found in this template
+            </Typography>
+            <Button 
+              onClick={() => router.push('/dashboard')}
+              sx={{ mt: 2 }}
+            >
+              Back to Dashboard
+            </Button>
+          </Card>
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout
+      headerProps={{
+        title: "COMPANY LOGO",
+        showSearch: true,
+        userInfo: {
+          name: "Sarah Johnson",
+          role: "Admin"
+        }
+      }}
+    >
+      <Box maxWidth="xl" mx="auto" p={3} sx={{ width: '100%' }}>
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box>
+            <Typography variant="h4" fontWeight="bold" color="#1a1a1a">
+              New Assessment
+            </Typography>
+            <Typography variant="body1" color="#6b7280">
+              {template?.name} - Started On {new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+              })}
+            </Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap={1} >
+            <Typography   variant="body2" color="#de9700" fontWeight="600" fontSize='14px' px={3} py={1} style={{backgroundColor:'#faf5e3', borderRadius:"10px"}}>
+              In Progress - {progress}%
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Progress Bar */}
+        <LinearProgress 
+          variant="determinate" 
+          value={progress} 
+          sx={{ 
+            height: 8, 
+            borderRadius: 4, 
+            mb: 3,
+            backgroundColor: '#e5e7eb',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: '#3b82f6',
+              borderRadius: 4,
+            }
+          }} 
+        />
+
+        {/* Main Card */}
+        <Card sx={{ 
+          borderRadius: 2, 
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          height: '630px',
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%'
+        }}>
+          {/* Card Header - Fixed Tabs */}
+          <Box sx={{ 
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: '#f8fafc',
+            position: 'relative'
+          }}>
+            {/* Decorative border */}
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '3px',
+              // background: 'linear-gradient(90deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%)',
+              borderRadius: '12px 12px 0 0'
+            }} />
+            
+            <Tabs
+              value={currentSectionIndex}
+              onChange={(e, newValue) => setCurrentSectionIndex(newValue)}
+              variant="fullWidth"
+              sx={{
+                pt: 1,
+                '& .MuiTabs-indicator': {
+                  display: 'none'
+                },
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  minHeight: 48,
+                  px: 3,
+                  color: '#9ca3af',
+                  '&.Mui-selected': {
+                    color: '#1f2937',
+                    backgroundColor: '#f0f9ff',
+                    borderBottom: '3px solid #3b82f6',
+                  }
+                }
+              }}
+            >
+              {getSections().map((section, index) => {
+                const status = getSectionStatus(index);
+                const isSelected = currentSectionIndex === index;
+                
+                return (
+                  <Tab
+                    key={section.id}
+                    label={
+                      <Box display="flex" alignItems="center">
+                        {renderTabIcon(status)}
+                        {section.data?.title || `Section ${index + 1}`}
+                      </Box>
+                    }
+                    sx={{
+                      color: isSelected ? '#1f2937' : '#9ca3af',
+                      fontWeight: isSelected ? 700 : 500,
+                      backgroundColor: isSelected ? '#f0f9ff' : 'transparent',
+                      borderBottom: isSelected ? '3px solid #3b82f6' : 'none',
+                      '&:hover': {
+                        color: '#6b7280'
+                      }
+                    }}
+                  />
+                );
+              })}
+            </Tabs>
+          </Box>
+
+          {/* Card Body - Scrollable Questions */}
+          <Box sx={{ 
+            flex: 1, 
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <Box sx={{ 
+              flex: 1,
+              overflowY: 'auto',
+              p: 3,
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: '#f1f5f9',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#3b82f6',
+                borderRadius: '4px',
+                '&:hover': {
+                  backgroundColor: '#2563eb',
+                }
+              },
+            }}>
+              {getVisibleQuestions()
+                .filter(q => q.sectionId === getSections()[currentSectionIndex]?.id)
+                .map((question, qIndex) => (
+                <Box 
+                  key={question.id} 
+                  mb={4}
+                >
+                  <Typography variant="h6" fontWeight="600" mb={2}>
+                    {qIndex + 1}. {question.data?.question}
+                    {question.data?.isRequired && (
+                      <Typography component="span" color="error" ml={0.5}>*</Typography>
+                    )}
+                  </Typography>
+                  
+                  {/* Radio/Multiple Choice */}
+                  {(question.data?.questionType === 'radio' || question.data?.questionType === 'multiple-choice') && (
+                    <FormControl component="fieldset" fullWidth>
+                      <RadioGroup
+                        value={answers[question.id] || ''}
+                        onChange={(e) => {
+                          handleAnswerChange(question.id, e.target.value);
+                        }}
+                      >
+                        {question.data?.options?.map((option: string, index: number) => (
+                          <FormControlLabel
+                            key={index}
+                            value={option}
+                            control={<Radio sx={{ color: '#3b82f6' }} />}
+                            label={option}
+                            sx={{
+                              mb: 1,
+                              '& .MuiFormControlLabel-label': {
+                                fontSize: '14px',
+                                color: '#374151'
+                              }
+                            }}
+                          />
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                  )}
+
+                  {/* Yes/No */}
+                  {question.data?.questionType === 'yes-no' && (
+                    <FormControl component="fieldset" fullWidth>
+                      <RadioGroup
+                        value={answers[question.id] || ''}
+                        onChange={(e) => {
+                          handleAnswerChange(question.id, e.target.value);
+                        }}
+                      >
+                        <FormControlLabel
+                          value="Yes"
+                          control={<Radio sx={{ color: '#3b82f6' }} />}
+                          label="Yes"
+                          sx={{
+                            mb: 1,
+                            '& .MuiFormControlLabel-label': {
+                              fontSize: '14px',
+                              color: '#374151'
+                            }
+                          }}
+                        />
+                        <FormControlLabel
+                          value="No"
+                          control={<Radio sx={{ color: '#3b82f6' }} />}
+                          label="No"
+                          sx={{
+                            mb: 1,
+                            '& .MuiFormControlLabel-label': {
+                              fontSize: '14px',
+                              color: '#374151'
+                            }
+                          }}
+                        />
+                      </RadioGroup>
+                    </FormControl>
+                  )}
+
+                  {/* Checkbox */}
+                  {question.data?.questionType === 'checkbox' && (
+                    <FormControl component="fieldset" fullWidth>
+                      <FormGroup>
+                        {question.data?.options?.map((option: string, index: number) => (
+                          <FormControlLabel
+                            key={index}
+                            control={
+                              <Checkbox
+                                checked={(answers[question.id] || []).includes(option)}
+                                onChange={(e) => {
+                                  const currentAnswers = answers[question.id] || [];
+                                  const newAnswers = e.target.checked
+                                    ? [...currentAnswers, option]
+                                    : currentAnswers.filter((ans: string) => ans !== option);
+                                  handleAnswerChange(question.id, newAnswers);
+                                }}
+                                sx={{ color: '#3b82f6' }}
+                              />
+                            }
+                            label={option}
+                            sx={{
+                              mb: 1,
+                              '& .MuiFormControlLabel-label': {
+                                fontSize: '14px',
+                                color: '#374151'
+                              }
+                            }}
+                          />
+                        ))}
+                      </FormGroup>
+                    </FormControl>
+                  )}
+
+                  {/* Text Input */}
+                  {question.data?.questionType === 'text-input' && (
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={answers[question.id] || ''}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      placeholder="Enter your answer here..."
+                      variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                          backgroundColor: 'white'
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Card Footer - Fixed Buttons */}
+          <Box sx={{ 
+            borderTop: '1px solid #e5e7eb',
+            p: 3,
+            backgroundColor: '#f8fafc',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={handlePreviousSection}
+              disabled={currentSectionIndex === 0}
+              sx={{
+                borderColor: '#3b82f6',
+                color: '#3b82f6',
+                '&:hover': {
+                  backgroundColor: '#eff6ff',
+                  borderColor: '#2563eb',
+                }
+              }}
+            >
+              Previous Section
+            </Button>
+
+            <Button
+              variant="outlined"
+              startIcon={<SaveIcon sx={{ color: '#3b82f6' }} />}
+              onClick={handleSaveDraft}
+              sx={{
+                borderColor: '#3b82f6',
+                color: '#3b82f6',
+                '&:hover': {
+                  backgroundColor: '#eff6ff',
+                  borderColor: '#2563eb',
+                }
+              }}
+            >
+              Save Draft
+            </Button>
+
+            <Button
+              variant="contained"
+              endIcon={<ArrowForward />}
+              onClick={handleNextSection}
+              disabled={currentSectionIndex === getSections().length - 1}
+              sx={{
+                backgroundColor: '#3b82f6',
+                '&:hover': {
+                  backgroundColor: '#2563eb',
+                }
+              }}
+            >
+              Next Section
+            </Button>
+          </Box>
+        </Card>
+      </Box>
+    </DashboardLayout>
+  );
+};
+
+export default AssessmentPage;   
+
