@@ -1,0 +1,361 @@
+"use client";
+
+import React, { useState } from "react";
+import {
+  Grid,
+  TextField,
+  Button,
+  Typography,
+  InputAdornment,
+  IconButton,
+  Box,
+  Container,
+} from "@mui/material";
+import {
+  Visibility,
+  VisibilityOff,
+  Email,
+  Lock,
+  LocationOn,
+} from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import Image from 'next/image';
+
+interface FormState {
+  email: string;
+  password: string;
+}
+
+export default function SignInPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState<FormState>({
+    email: "johndoe@gmail.com",
+    password: "",
+  });
+  const [activeTab, setActiveTab] = useState("signin");
+  const router = useRouter();
+
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleContinue = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log("Continue clicked", form);
+  };
+
+  return (
+    <Box sx={{ 
+      position: "relative", 
+      minHeight: "100vh", 
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "center", 
+      bgcolor: "white", 
+      overflow: "hidden" 
+    }}>
+      {/* Background image on right side (hidden on small screens) */}
+      <Box sx={{ 
+        display: { xs: "none", md: "block" }, 
+        position: "absolute", 
+        top: 0, 
+        right: 0, 
+        width: "50%", 
+        height: "100%", 
+        zIndex: 0 
+      }}>
+        <Box
+          component="img"
+          src="/login_bg.svg"
+          alt="Doctor"
+          sx={{ 
+            objectFit: "cover", 
+            width: "100%", 
+            height: "100%" 
+          }}
+        />
+      </Box>
+
+      {/* Content wrapper */}
+      <Container maxWidth="xl" sx={{ position: "relative", zIndex: 10 }}>
+        <Grid container sx={{ minHeight: "100vh" }}>
+          {/* Left side form */}
+        <Grid 
+  item 
+  xs={12} 
+  md={6} 
+  sx={{ 
+    position: "relative", // <-- add this
+    display: "flex", 
+    flexDirection: "column", 
+    justifyContent: "center", 
+    px: { xs: 3, sm: 6 }, 
+    py: { xs: 4, md: 0 }, 
+    bgcolor: "white" 
+  }}
+>
+
+            {/* Company Logo */}
+
+
+<Box
+  sx={{
+    position: { xs: 'static', md: 'absolute' },  // Static on mobile, absolute on desktop
+    top: { md: 24 },
+    left: { md: 130 },
+    display: 'flex',
+    justifyContent: { xs: 'center', md: 'flex-start' },
+    alignItems: 'center',
+    mb: { xs: 4, md: 0 }, // margin-bottom on small screens
+    px: { xs: 0, md: 2 },
+    zIndex: 2,
+  }}
+>
+  <Image
+    src="/medical-logo.png"
+    alt="Company Logo"
+    width={180}
+    height={180}
+    style={{
+      width: '100%',
+      height: 'auto',
+      maxWidth: '180px',
+      objectFit: 'contain',
+    }}
+  />
+</Box>
+
+            {/* Form Content */}
+            <Box sx={{ maxWidth: "400px", width: "100%", mx: "auto", pt: { xs: 4, md: 3 } }}>
+              {/* Welcome Text */}
+              <Box sx={{ mb: 6, textAlign: "center" }}>
+                <Typography
+                  variant="h3"
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: "#000", 
+                    mb: 1, 
+                    fontSize: { xs: 32, md: 36 },
+                    textAlign: "center"
+                  }}
+                >
+                  Welcome Back
+                </Typography>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: "#6b7280", 
+                    fontSize: 16,
+                    textAlign: "center"
+                  }}
+                >
+                  Please enter your details to continue
+                </Typography>
+              </Box>
+
+              {/* Tab Buttons */}
+              <Box
+                sx={{
+                  display: "flex",
+                  width: "100%",
+                  mb: 4,
+                  borderRadius: "8px",
+                  backgroundColor: "#f8f9fa",
+                  p: "4px",
+                  border: "1px solid #e9ecef",
+                }}
+              >
+                <Button
+                  onClick={() => setActiveTab("signin")}
+                  sx={{
+                    flex: 1,
+                    py: "12px",
+                    borderRadius: "6px",
+                    fontWeight: 500,
+                    textTransform: "none",
+                    fontSize: "14px",
+                    backgroundColor: activeTab === "signin" ? "white" : "transparent",
+                    color: activeTab === "signin" ? "#000" : "#6b7280",
+                    boxShadow: activeTab === "signin" ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "none",
+                    "&:hover": {
+                      backgroundColor: activeTab === "signin" ? "white" : "rgba(0,0,0,0.04)",
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  onClick={() => router.push("/auth/signup")}
+                  sx={{
+                    flex: 1,
+                    py: "12px",
+                    borderRadius: "6px",
+                    fontWeight: 500,
+                    textTransform: "none",
+                    fontSize: "14px",
+                    backgroundColor: "transparent",
+                    color: "#6b7280",
+                    "&:hover": {
+                      backgroundColor: "rgba(0,0,0,0.04)",
+                    },
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </Box>
+
+              {/* Form */}
+              <Box component="form" onSubmit={handleContinue}>
+                {/* Email */}
+                <TextField
+                  name="email"
+                  value={form.email}
+                  onChange={handleInputChange}
+                  placeholder="Email or Phone Number"
+                  fullWidth
+                  variant="outlined"
+                  sx={{ mb: 3 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Email sx={{ color: "#9ca3af", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      fontSize: "14px",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "1px solid #e5e7eb",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        border: "1px solid #d1d5db",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid #3b82f6",
+                      },
+                    },
+                  }}
+                />
+
+                {/* Password */}
+                <TextField
+                  name="password"
+                  value={form.password}
+                  onChange={handleInputChange}
+                  placeholder="Password"
+                  type={showPassword ? "text" : "password"}
+                  fullWidth
+                  variant="outlined"
+                  sx={{ mb: 4 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock sx={{ color: "#9ca3af", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleClickShowPassword}
+                          edge="end"
+                          sx={{ color: "#9ca3af" }}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    sx: {
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      fontSize: "14px",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "1px solid #e5e7eb",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        border: "1px solid #d1d5db",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid #3b82f6",
+                      },
+                    },
+                  }}
+                />
+
+                {/* Continue Button */}
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4285f4",
+                    fontSize: "16px",
+                    fontWeight: 500,
+                    py: "14px",
+                    borderRadius: "8px",
+                    mb: 3,
+                    textTransform: "none",
+                    boxShadow: "none",
+                    "&:hover": {
+                      backgroundColor: "#3367d6",
+                      boxShadow: "none",
+                    },
+                  }}
+                >
+                  Continue
+                </Button>
+              </Box>
+
+              {/* Forgot Password */}
+              <Box sx={{ textAlign: "center", mb: 8 }}>
+                <Button
+                  sx={{
+                    textTransform: "none",
+                    color: "#9ca3af",
+                    fontSize: "14px",
+                    textDecoration: "underline",
+                    "&:hover": {
+                      color: "#6b7280",
+                      backgroundColor: "transparent",
+                    },
+                  }}
+                >
+                  Forgot Password?
+                </Button>
+              </Box>
+
+              {/* Bottom Text */}
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: "center",
+                  color: "#9ca3af",
+                  fontSize: "12px",
+                  lineHeight: 1.5,
+                }}
+              >
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                diam nonumy eirmod tempor invidunt ut labore et dolore magna
+              </Typography>
+            </Box>
+          </Grid>
+
+          {/* Right side - for layout only, image is absolutely positioned */}
+          <Grid item xs={0} md={6} sx={{ display: { xs: "none", md: "block" } }} />
+        </Grid>
+      </Container>
+    </Box>
+  );
+}
