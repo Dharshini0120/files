@@ -1,0 +1,333 @@
+sharedui>Auth>cretae-paswd>page.tsx
+
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from '@apollo/client';
+import { SET_PASSWORD_MUTATION } from '../../../graphql/mutations/auth';
+import { SetPasswordInput } from '../../../../../shared-types/src/auth/auth.types';
+import { toast } from 'react-toastify';
+import Image from "next/image";
+import {
+  Box,
+  Button,
+  Typography,
+  IconButton,
+  InputAdornment,
+  TextField,
+  CircularProgress,
+} from "@mui/material";
+import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+
+const CreatePasswordPage: React.FC = () => {
+  const [form, setForm] = useState({ password: "", confirmPassword: "" });
+  const [touched, setTouched] = useState({ password: false, confirmPassword: false });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
+
+  const [setPassword, { loading }] = useMutation(SET_PASSWORD_MUTATION);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched({ ...touched, [name]: true });
+  };
+
+  const passwordsMatch = form.confirmPassword === form.password || !form.confirmPassword;
+  const isPasswordFilled = form.password.length > 0;
+  const canSubmit = isPasswordFilled && passwordsMatch && form.confirmPassword.length > 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+  
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get("email");
+  
+      if (!email) {
+        toast.error("Email not found. Please try the registration process again.");
+        return;
+      }
+  
+      const input: SetPasswordInput = {
+        email,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
+      };
+  
+      const response = await setPassword({ variables: { input } });
+      console.log("Full Set Password response:", response);
+  
+      const result = response?.data?.setPassword;
+      if (!result) {
+        toast.error("Invalid response from server");
+        return;
+      }
+  
+      if (result.error) {
+        toast.error(result.message || "Failed to set password");
+        return;
+      }
+  
+      if (result.status === "success") {
+        toast.success(result.message || "Password set successfully!");
+  
+        const responseData = result.data || {};
+        // If token is added later by API, store it
+        if (responseData.token) {
+          document.cookie = `token=${responseData.token}; path=/`;
+        }
+  
+        // Navigate (use nextStep if needed, otherwise go home)
+        if (responseData.nextStep === "complete") {
+          router.push("/home");
+        } 
+      } else {
+        toast.error(result.message || "Failed to set password");
+      }
+    } catch (err) {
+      console.error("Set Password error:", err);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
+  
+
+  const renderPasswordField = (
+    name: "password" | "confirmPassword",
+    label: string,
+    show: boolean,
+    handleShow: () => void
+  ) => {
+    const isConfirm = name === "confirmPassword";
+    const showError = isConfirm && touched.confirmPassword && !passwordsMatch;
+
+    return (
+      <TextField
+        name={name}
+        value={form[name]}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        label={label}
+        placeholder={label}
+        type={show ? "text" : "password"}
+        fullWidth
+        error={showError}
+        helperText={showError ? "Passwords do not match" : " "}
+        FormHelperTextProps={{
+          sx: { minHeight: "20px" }, // avoid jumping
+        }}
+        InputLabelProps={{
+          shrink: true,
+          sx: {
+            fontSize: "0.95rem",
+            color: "#9ca3af",
+            "&.Mui-focused": { color: "#9ca3af" },
+            transform: "translate(14px, 16px) scale(1)",
+            "&.MuiInputLabel-shrink": {
+              transform: "translate(14px, -8px) scale(0.85)",
+              backgroundColor: "#fff",
+              px: 0.5,
+            },
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" sx={{ pr: 1 }}>
+              <Lock fontSize="small" style={{ opacity: 0.7 }} />
+              <Box
+                sx={{
+                  height: 28,
+                  width: "1px",
+                  bgcolor: "#b0b0b0",
+                  ml: 1,
+                }}
+              />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={handleShow}>
+                {show ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+          sx: {
+            borderRadius: "12px",
+            backgroundColor: "#fff",
+            "& fieldset": { borderColor: showError ? "#d32f2f" : "#a8a8a8" }, // red border if mismatch
+            "&:hover fieldset": { borderColor: showError ? "#d32f2f" : "#808080" },
+            "&.Mui-focused fieldset": { borderColor: showError ? "#d32f2f" : "#4285F4" },
+            fontSize: "1rem",
+            py: 0.5,
+          },
+        }}
+        variant="outlined"
+      />
+    );
+  };
+
+  return (
+    <Box
+      className={`${inter.className}`}
+      minHeight="100vh"
+      display="flex"
+      position="relative"
+      bgcolor="#fff"
+    >
+      {/* Background Overlay */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "url('/login_bg.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.07,
+          zIndex: 0,
+        }}
+      />
+
+      {/* Left Section */}
+      <Box
+        flex={1}
+        display="flex"
+        flexDirection="column"
+        justifyContent="space-between"
+        px={{ xs: 4, md: 16 }}
+        py={6}
+        position="relative"
+        zIndex={1}
+      >
+        {/* Logo */}
+        <Box display="flex" justifyContent="center" mb={4}>
+          <Image
+            src="/medical-logo.png"
+            alt="Company Logo"
+            width={160}
+            height={160}
+            style={{ objectFit: "contain" }}
+            priority
+          />
+        </Box>
+
+        {/* Form */}
+        <Box maxWidth="md" mx="auto" width="100%">
+          <Box mb={6} textAlign="center">
+            <Typography variant="h5" fontWeight={700} fontSize={28} color="#3D3D3D">
+              Create New Password
+            </Typography>
+            <Typography variant="body1" color="#6b7280">
+              Set a secure password to continue
+            </Typography>
+          </Box>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            display="flex"
+            flexDirection="column"
+            gap={3}
+            maxWidth={500}
+            width="100%"
+            mx="auto"
+          >
+            {renderPasswordField("password", "Password", showPassword, () => setShowPassword(!showPassword))}
+            {renderPasswordField(
+              "confirmPassword",
+              "Confirm Password",
+              showConfirmPassword,
+              () => setShowConfirmPassword(!showConfirmPassword)
+            )}
+
+<Button
+  fullWidth
+  variant="contained"
+  type="submit"
+  disabled={!canSubmit || loading}
+  sx={{
+    backgroundColor: "#4285F4",
+    fontWeight: 600,
+    textTransform: "none",
+    borderRadius: "8px",
+    py: 2,
+    fontSize: "18px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 1.5,
+    "&:hover": { backgroundColor: "#3367D6" },
+    "&:disabled": { backgroundColor: "#ccc", cursor: "not-allowed" },
+  }}
+>
+  {loading ? (
+    <>
+      Setting Password...
+      <CircularProgress size={20} sx={{ color: "#fff" }} />
+    </>
+  ) : (
+    "Continue"
+  )}
+</Button>
+
+          </Box>
+        </Box>
+
+        {/* Bottom Text */}
+        <Box mt={6} px={{ xs: 2, sm: 4, md: 6 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              color: "#6b7280",
+              textAlign: "center",
+              maxWidth: "90%",
+              mx: "auto",
+              lineHeight: 1.7,
+              fontSize: { xs: "0.8rem", sm: "0.85rem", md: "16px" },
+            }}
+          >
+            Join our platform to securely manage your healthcare facility, collaborate with your team, and access tools that enhance patient care.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Right Image */}
+      <Box
+        sx={{
+          display: { xs: "none", lg: "flex" },
+          flex: 1.1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+          borderRadius: "0 24px 24px 0",
+          overflow: "hidden",
+        }}
+      >
+        <Image
+          src="/login_bg.svg"
+          alt="Doctor"
+          layout="intrinsic"
+          width={700}
+          height={800}
+          style={{
+            objectFit: "cover",
+            width: "100%",
+            height: "100%",
+            borderRadius: "0 24px 24px 0",
+          }}
+          priority
+        />
+      </Box>
+    </Box>
+  );
+};
+
+export default CreatePasswordPage;

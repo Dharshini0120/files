@@ -1,0 +1,458 @@
+apps>admin-portal>src>app>api>graphQl>route.ts
+
+import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+
+// Email configuration
+const emailConfig = {
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || 'your-email@gmail.com',
+    pass: process.env.SMTP_PASS || 'your-app-password',
+  },
+};
+
+// Send OTP email function
+const sendOTPEmail = async (email: string, otp: string, userName: string): Promise<boolean> => {
+  try {
+    const transporter = nodemailer.createTransport(emailConfig);
+    
+    const mailOptions = {
+      from: `"Healthcare Assessment" <${emailConfig.auth.user}>`,
+      to: email,
+      subject: 'OTP Verification - Healthcare Assessment Platform',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>OTP Verification</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background-color: #4285F4;
+              color: white;
+              padding: 20px;
+              text-align: center;
+              border-radius: 8px 8px 0 0;
+            }
+            .content {
+              background-color: #f9f9f9;
+              padding: 30px;
+              border-radius: 0 0 8px 8px;
+            }
+            .otp-box {
+              background-color: #4285F4;
+              color: white;
+              padding: 15px;
+              text-align: center;
+              border-radius: 8px;
+              font-size: 24px;
+              font-weight: bold;
+              margin: 20px 0;
+              letter-spacing: 5px;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              color: #666;
+              font-size: 14px;
+            }
+            .warning {
+              background-color: #fff3cd;
+              border: 1px solid #ffeaa7;
+              color: #856404;
+              padding: 15px;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Healthcare Assessment Platform</h1>
+            <p>OTP Verification</p>
+          </div>
+          
+          <div class="content">
+            <h2>Hello ${userName},</h2>
+            
+            <p>Thank you for registering with our Healthcare Assessment Platform. To complete your registration, please use the following OTP (One-Time Password):</p>
+            
+            <div class="otp-box">
+              ${otp}
+            </div>
+            
+            <p><strong>This OTP will expire in 10 minutes.</strong></p>
+            
+            <div class="warning">
+              <strong>Important:</strong> Please do not share this OTP with anyone. Our team will never ask for your OTP over phone or email.
+            </div>
+            
+            <p>If you didn't request this OTP, please ignore this email.</p>
+            
+            <p>Best regards,<br>
+            Healthcare Assessment Team</p>
+          </div>
+          
+          <div class="footer">
+            <p>This is an automated email. Please do not reply to this message.</p>
+            <p>&copy; 2024 Healthcare Assessment Platform. All rights reserved.</p>
+          </div>
+        </body>
+        </html>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('📧 Email sent successfully:', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('❌ Error sending email:', error);
+    return false;
+  }
+};
+
+// Mock user data for testing
+const mockUsers = [
+  {
+    email: 'testtestestetsttweerwe@yopmail.com',
+    password: 'SmartWork@123!',
+    fullName: 'Test User',
+    role: 'USER'
+  },
+  {
+    email: 'admin@example.com',
+    password: 'Admin@123!',
+    fullName: 'Admin User',
+    role: 'ADMIN'
+  }
+];
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { query, variables } = body;
+
+    // Handle sign-in mutation
+    if (query.includes('signIn')) {
+      const { emailOrPhone, password } = variables.input;
+      
+      // Find user
+      const user = mockUsers.find(u => u.email === emailOrPhone);
+      
+      if (!user || user.password !== password) {
+        return NextResponse.json({
+          data: {
+            signIn: {
+              success: false,
+              message: 'Invalid email or password',
+              token: null,
+              user: null
+            }
+          }
+        });
+      }
+
+      // Generate mock JWT token
+      const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODhiMjk1MzBjOTFiZTViYjdjMTdiMWIiLCJlbWFpbCI6IiR7dXNlci5lbWFpbH0iLCJyb2xlIjoiJHt1c2VyLnJvbGV9IiwiZmFjaWxpdHlOYW1lIjoiVGVzdCBIb3NwaXRhbCIsImlhdCI6MTc1Mzk1MDcxMywiZXhwIjoxNzU0MDM3MTEzfQ.mock_token_${Date.now()}`;
+
+      return NextResponse.json({
+        data: {
+          signIn: {
+            success: true,
+            message: 'Sign in successful',
+            token: mockToken,
+            user: {
+              fullName: user.fullName,
+              email: user.email,
+              role: user.role
+            }
+          }
+        }
+      });
+    }
+
+    // Handle sign-up mutation
+    if (query.includes('signUp')) {
+      const { fullName, email, phoneNumber, facilityName, facilityType, state, county, numberOfLicensedBeds, serviceLines } = variables.input;
+      
+      // Check if email already exists
+      const existingUser = mockUsers.find(u => u.email === email);
+      if (existingUser) {
+        return NextResponse.json({
+          data: {
+            signUp: {
+              status: false,
+              message: 'User already exists with this email',
+              statusCode: 400,
+              data: null,
+              error: 'EMAIL_ALREADY_EXISTS'
+            }
+          }
+        });
+      }
+
+      // Generate OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+      
+      // Send OTP via email
+      const emailSent = await sendOTPEmail(email, otp, fullName);
+      
+      if (!emailSent) {
+        return NextResponse.json({
+          data: {
+            signUp: {
+              status: false,
+              message: 'Failed to send OTP email. Please try again.',
+              statusCode: 500,
+              data: null,
+              error: 'EMAIL_SEND_FAILED'
+            }
+          }
+        });
+      }
+      
+      // Store OTP temporarily (in real app, store in database)
+      const otpData = {
+        email,
+        otp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+        userData: { 
+          fullName, 
+          email, 
+          phoneNumber, 
+          facilityName, 
+          facilityType, 
+          state, 
+          county,
+          numberOfLicensedBeds,
+          serviceLines
+        }
+      };
+      
+      // In a real app, you'd store this in a database
+      // For now, we'll store it in memory (this will be lost on server restart)
+      if (!global.otpStore) {
+        global.otpStore = new Map();
+      }
+      global.otpStore.set(email, otpData);
+
+      // Successful sign-up with OTP sent
+      return NextResponse.json({
+        data: {
+          signUp: {
+            status: true,
+            message: 'OTP has been sent to your email address. Please check your inbox and verify your account.',
+            statusCode: 200,
+            data: {
+              email,
+              otpSent: true,
+              expiresIn: '10 minutes'
+            },
+            error: null
+          }
+        }
+      });
+    }
+
+    // Handle OTP verification mutation
+    if (query.includes('verifyOTP')) {
+      const { email, otp } = variables.input;
+      
+      // Get stored OTP data
+      if (!global.otpStore) {
+        return NextResponse.json({
+          data: {
+            verifyOtp: {
+              status: "error",
+              message: 'OTP verification failed. Please try signing up again.',
+              statusCode: 400,
+              data: null,
+              error: 'OTP_NOT_FOUND'
+            }
+          }
+        });
+      }
+
+      const otpData = global.otpStore.get(email);
+      
+      if (!otpData) {
+        return NextResponse.json({
+          data: {
+            verifyOtp: {
+              status: "error",
+              message: 'OTP not found. Please try signing up again.',
+              statusCode: 400,
+              data: null,
+              error: 'OTP_NOT_FOUND'
+            }
+          }
+        });
+      }
+
+      // Check if OTP is expired
+      if (new Date() > otpData.expiresAt) {
+        global.otpStore.delete(email);
+        return NextResponse.json({
+          data: {
+            verifyOtp: {
+              status: "error",
+              message: 'OTP has expired. Please request a new one.',
+              statusCode: 400,
+              data: null,
+              error: 'OTP_EXPIRED'
+            }
+          }
+        });
+      }
+
+      // Verify OTP
+      if (otpData.otp !== otp) {
+        return NextResponse.json({
+          data: {
+            verifyOtp: {
+              status: "error",
+              message: 'Invalid OTP. Please check and try again.',
+              statusCode: 400,
+              data: null,
+              error: 'INVALID_OTP'
+            }
+          }
+        });
+      }
+
+      // OTP is valid - create user account
+      const newUser = {
+        email: otpData.userData.email,
+        password: 'temp_password', // Will be set during password creation
+        fullName: otpData.userData.fullName,
+        role: 'USER'
+      };
+
+      // In a real app, you'd save the user to database
+      mockUsers.push(newUser);
+
+      // Remove OTP data after successful verification
+      global.otpStore.delete(email);
+
+      return NextResponse.json({
+        data: {
+          verifyOtp: {
+            status: "success",
+            message: 'Email verified successfully. Please set your password.',
+            statusCode: 200,
+            data: JSON.stringify({
+              nextStep: "set_password"
+            }),
+            error: null
+          }
+        }
+      });
+    }
+
+    // Handle setPassword mutation
+    if (query.includes('setPassword')) {
+      const { email, password, confirmPassword } = variables.input;
+      
+      // Find user by email
+      const user = mockUsers.find(u => u.email === email);
+      
+      if (!user) {
+        return NextResponse.json({
+          data: {
+            setPassword: {
+              status: "error",
+              message: 'User not found. Please try signing up again.',
+              statusCode: 400,
+              data: null,
+              error: 'USER_NOT_FOUND'
+            }
+          }
+        });
+      }
+
+      // Validate password
+      if (password !== confirmPassword) {
+        return NextResponse.json({
+          data: {
+            setPassword: {
+              status: "error",
+              message: 'Passwords do not match.',
+              statusCode: 400,
+              data: null,
+              error: 'PASSWORD_MISMATCH'
+            }
+          }
+        });
+      }
+
+      // Update user password
+      user.password = password;
+
+      // Generate mock JWT token
+      const mockToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODhiMjk1MzBjOTFiZTViYjdjMTdiMWIiLCJlbWFpbCI6IiR7dXNlci5lbWFpbH0iLCJyb2xlIjoiJHt1c2VyLnJvbGV9IiwiZmFjaWxpdHlOYW1lIjoiVGVzdCBIb3NwaXRhbCIsImlhdCI6MTc1Mzk1MDcxMywiZXhwIjoxNzU0MDM3MTEzfQ.mock_token_${Date.now()}`;
+
+      return NextResponse.json({
+        data: {
+          setPassword: {
+            status: "success",
+            message: 'Password set successfully! Registration completed.',
+            statusCode: 200,
+            data: JSON.stringify({
+              nextStep: "complete",
+              token: mockToken
+            }),
+            error: null
+          }
+        }
+      });
+    }
+
+    // Handle getServiceLines query
+    if (query.includes('getServiceLines')) {
+      const mockServiceLines = [
+        { id: '1', name: 'Ambulatory Surgical', description: 'Outpatient surgical services', isActive: true },
+        { id: '2', name: 'Emergency Department', description: 'Emergency medical services', isActive: true },
+        { id: '3', name: 'Inpatient Services', description: 'Hospital admission services', isActive: true },
+        { id: '4', name: 'Outpatient Services', description: 'Non-admission medical services', isActive: true },
+        { id: '5', name: 'Specialty Care', description: 'Specialized medical services', isActive: true },
+        { id: '6', name: 'Pediatrics', description: 'Children medical services', isActive: true },
+        { id: '7', name: 'Cardiology', description: 'Heart and cardiovascular services', isActive: true },
+        { id: '8', name: 'Oncology', description: 'Cancer treatment services', isActive: false },
+      ];
+
+      return NextResponse.json({
+        data: {
+          getServiceLines: {
+            status: true,
+            message: 'Service lines retrieved successfully',
+            statusCode: 200,
+            data: mockServiceLines,
+            error: null
+          }
+        }
+      });
+    }
+
+    // Handle other queries/mutations
+    return NextResponse.json({
+      errors: [{ message: 'Query not supported' }]
+    });
+
+  } catch (error) {
+    console.error('GraphQL API Error:', error);
+    return NextResponse.json({
+      errors: [{ message: 'Internal server error' }]
+    }, { status: 500 });
+  }
+} 

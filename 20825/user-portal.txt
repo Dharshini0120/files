@@ -1,0 +1,89 @@
+user-portal-src>app>layout.tsx
+
+"use client";
+import { Inter, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import ThemeRegistry from "../components/ThemeRegistry";
+import React, { ReactNode, useState } from 'react';
+import {
+  AppBar,
+  Backdrop,
+  Box,
+  CssBaseline,
+  Drawer,
+  IconButton,
+  InputBase,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Theme,
+  Toolbar,
+  Typography,
+  useTheme,
+} from '@mui/material';
+import { store } from "../store/store";
+import { Provider } from "react-redux";
+import AppHeader from "../components/layout/AppHeader";
+import HomeSection from "../components/home/HeroSection";
+import HomeAssessmentSection from "../components/home/HomeAssessmentSection";
+import HomePowerfulSection from "../components/home/HomePowerfulSection";
+import HomeTestimonialSection from "../components/home/HomeTestimonalSection";
+import HomeCTASection from "../components/home/HomeCTASection";
+import AppFooter from "../components/layout/AppFooter";
+import { ApolloClient, ApolloProvider, InMemoryCache, gql } from '@apollo/client';
+import client from "@frontend/apollo-client";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter"
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const ReduxProvider = ({ children }: { children: React.ReactNode }) => (
+  <Provider store={store}>{children}</Provider>
+);
+
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${inter.variable} ${geistMono.variable}`}>
+        <ThemeRegistry>
+          <ReduxProvider>
+            <ApolloProvider client={client}>
+              <Box sx={{ display: 'flex' }}>
+                <Box component="main" sx={{ flexGrow: 1, p: 0, backgroundColor: '#f9fbfc', minHeight: '100vh' }}>
+                  {children}
+                </Box>
+              </Box>
+            </ApolloProvider>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              style={{ zIndex: 9999 }}
+            />
+          </ReduxProvider>
+        </ThemeRegistry>
+      </body>
+    </html>
+  );
+}
+
