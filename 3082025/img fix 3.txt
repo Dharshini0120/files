@@ -127,17 +127,18 @@ const SharedSignIn = () => {
         }}
       >
         {/* LOGO */}
-        <Box>
-          <Image
-            src="/medical-logo.png"
-            alt="Company Logo"
-            width={0}
-            height={0}
-            sizes="(max-width: 600px) 40px, (max-width: 900px) 60px, 160px"
-            style={{ objectFit: "contain", width: "clamp(160px, 12vw, 160px)", height: "auto",  }}
-            priority
-            className="mt-0 md:mt-5 lg:mt-12"
-          />
+        <Box 
+            sx={{ mt: { xs: 0, xl: "13px" } }}
+          >
+            <Image
+              src="/medical-logo.png"
+              alt="Company Logo"
+              width={0}
+              height={0}
+              sizes="(max-width: 600px) 40px, (max-width: 900px) 60px, 160px"
+              style={{ objectFit: "contain", width: "clamp(160px, 12vw, 160px)", height: "auto" }}
+              priority
+            />
         </Box>
 
         {/* LEFT BACKGROUND IMAGE */}
@@ -376,10 +377,10 @@ const SharedSignIn = () => {
         </Box>
 
         {/* Bottom Text */}
-        <Box mb={{sm:1,xl:4}} position="relative" zIndex={1}>
+        <Box mb={{sm:0,xl:3}} position="relative" zIndex={1}>
           <Typography
             sx={{
-              mb: { sm: 1, xl: 4 },
+              mb: { sm: 0, xl: 3 },
               color: "#6B7280",
               textAlign: "center",
               maxWidth: "90%",
