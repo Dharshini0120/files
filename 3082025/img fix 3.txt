@@ -112,6 +112,18 @@ const SharedSignIn = () => {
 
   return (
     <Box sx={{ display: "flex", height: "100vh", bgcolor: "#fff" }}>
+              {/* LEFT BACKGROUND IMAGE */}
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "url('/login_bg.svg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.08,
+            zIndex: 0,
+          }}
+        />
       {/* LEFT CONTENT */}
       <Box
         sx={{
@@ -141,18 +153,7 @@ const SharedSignIn = () => {
             />
         </Box>
 
-        {/* LEFT BACKGROUND IMAGE */}
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: "url('/login_bg.svg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            opacity: 0.07,
-            zIndex: 0,
-          }}
-        />
+
 
         {/* FORM */}
         <Box
@@ -186,7 +187,7 @@ const SharedSignIn = () => {
             borderRadius={2}
             bgcolor="#f0eeed"
             p={{ xs: 0.8, sm: 0.8, lg: 1 }}
-            mb={{ xs: 3,xl:6}}
+            mb={{ xs: 3,xl:3}}
           >
             <Box
               position="absolute"
@@ -394,14 +395,16 @@ const SharedSignIn = () => {
         </Box>
       </Box>
 
-      {/* RIGHT IMAGE */}
+  {/* RIGHT IMAGE WITH ROUNDED CORNERS & MARGIN */}
       <Box
         sx={{
           display: { xs: "none", lg: "flex" },
-          flex: 1.1,
-          height: "100%",
+          flex: 1,
+          height: "calc(100% - 60px)",
+          mt: "30px",
+          mb: "30px",
           position: "relative",
-          borderRadius: "0 24px 24px 0",
+          borderRadius: "24px",
           overflow: "hidden",
         }}
       >
@@ -409,7 +412,10 @@ const SharedSignIn = () => {
           src="/login_bg.svg"
           alt="Doctor"
           fill
-          style={{ objectFit: "cover", borderRadius: "0 24px 24px 0" }}
+          style={{
+            objectFit: "cover",
+            borderRadius: "24px",
+          }}
           priority
         />
       </Box>
