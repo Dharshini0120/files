@@ -412,7 +412,7 @@ const SignUpPage: React.FC = () => {
           <Image src="/medical-logo.png" alt="Company Logo" width={0} height={0} sizes="160px" style={{ objectFit: "contain", width: "clamp(160px, 12vw, 160px)", height: "auto" }} priority />
         </Box>
 
-        <Box component="form" onSubmit={handleContinue} sx={{ width: "100%", maxWidth: 740, display: "flex", flexDirection: "column", gap: 2, py: 2 }}>
+        <Box component="form" onSubmit={handleContinue} sx={{ width: "100%", maxWidth: 740, display: "flex", flexDirection: "column", gap: 2,  py: { xs: 0, md: 2 },}}>
           <Box textAlign="center">
             <Typography fontWeight={700} fontSize="20px" color="#3D3D3D">Create Account</Typography>
             <Typography fontSize="13px" color="#6b7280">Please enter your details to continue</Typography>
@@ -449,7 +449,7 @@ const SignUpPage: React.FC = () => {
           </Button>
         </Box>
 
-        <Box mb={{sm:0,xl:3}}>
+        <Box >
           <Typography sx={{ color: "#6B7280", textAlign: "center", maxWidth: "90%", mx: "auto", lineHeight: 1.2, fontSize: "13px" }}>
             Join our platform to securely manage your healthcare facility, collaborate with your team, and access tools that enhance patient care.
           </Typography>
