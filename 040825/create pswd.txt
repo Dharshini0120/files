@@ -1,0 +1,296 @@
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from '@apollo/client';
+import { SET_PASSWORD_MUTATION } from '../../../graphql/mutations/auth';
+import { SetPasswordInput } from '../../../../../shared-types/src/auth/auth.types';
+import { toast } from 'react-toastify';
+import Image from "next/image";
+import {
+  Box,
+  Button,
+  Typography,
+  IconButton,
+  InputAdornment,
+  TextField,
+  CircularProgress
+} from "@mui/material";
+import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+
+const CreatePasswordPage: React.FC = () => {
+  const [form, setForm] = useState({ password: "", confirmPassword: "" });
+  const [touched, setTouched] = useState({ password: false, confirmPassword: false });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
+
+  const [setPassword, { loading }] = useMutation(SET_PASSWORD_MUTATION);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched({ ...touched, [name]: true });
+  };
+
+  const passwordsMatch = form.confirmPassword === form.password || !form.confirmPassword;
+  const isPasswordFilled = form.password.length > 0;
+  const canSubmit = isPasswordFilled && passwordsMatch && form.confirmPassword.length > 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const email = urlParams.get("email");
+      const flow = urlParams.get("flow") || "signup";
+
+      if (!email) {
+        toast.error("Email not found. Please try the process again.");
+        return;
+      }
+
+      const input: SetPasswordInput = { email, password: form.password, confirmPassword: form.confirmPassword };
+      const response = await setPassword({ variables: { input } });
+      const result = response?.data?.setPassword;
+
+      if (!result) {
+        toast.error("Invalid response from server");
+        return;
+      }
+
+      if (result.error) {
+        toast.error(result.message || "Failed to set password");
+        return;
+      }
+
+      if (result.status === "success") {
+        toast.success(
+          result.message || (flow === "forgot" ? "Password reset successfully! Please sign in." : "Password set successfully!")
+        );
+
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1000);
+      } else {
+        toast.error(result.message || "Failed to set password");
+      }
+    } catch (err) {
+      console.error("Set Password error:", err);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const renderPasswordField = (
+    name: "password" | "confirmPassword",
+    label: string,
+    show: boolean,
+    handleShow: () => void
+  ) => {
+    const isConfirm = name === "confirmPassword";
+    const showError = isConfirm && touched.confirmPassword && !passwordsMatch;
+
+    return (
+      <TextField
+        name={name}
+        value={form[name]}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        label={label}
+        placeholder={label}
+        type={show ? "text" : "password"}
+        fullWidth
+        error={showError}
+        helperText={showError ? "Passwords do not match" : " "}
+        FormHelperTextProps={{ sx: { minHeight: "20px" } }}
+        InputLabelProps={{
+          shrink: true,
+          sx: {
+            fontSize: "0.95rem",
+            color: "#9ca3af",
+            "&.Mui-focused": { color: "#9ca3af" },
+            transform: "translate(14px, 16px) scale(1)",
+            "&.MuiInputLabel-shrink": {
+              transform: "translate(14px, -8px) scale(0.85)",
+              backgroundColor: "#fff",
+              px: 0.5,
+            },
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" sx={{ pr: 1 }}>
+              <Lock fontSize="small" style={{ opacity: 0.7 }} />
+              <Box sx={{ height: 28, width: "1px", bgcolor: "#b0b0b0", ml: 1 }} />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={handleShow}>{show ? <VisibilityOff /> : <Visibility />}</IconButton>
+            </InputAdornment>
+          ),
+          sx: {
+            borderRadius: "12px",
+            backgroundColor: "#fff",
+            "& fieldset": { borderColor: showError ? "#d32f2f" : "#a8a8a8" },
+            "&:hover fieldset": { borderColor: showError ? "#d32f2f" : "#808080" },
+            "&.Mui-focused fieldset": { borderColor: showError ? "#d32f2f" : "#4285F4" },
+            fontSize: "1rem",
+            py: 0.5,
+          },
+        }}
+        variant="outlined"
+      />
+    );
+  };
+
+  return (
+    <Box sx={{ display: "flex", height: "100vh", bgcolor: "#fff" }} className={inter.className}>
+      {/* Background Overlay */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "url('/login_bg.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.1,
+          zIndex: 0,
+        }}
+      />
+
+      {/* Left Content */}
+      <Box
+        sx={{
+          flex: 1.1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: { xs: 1.5, md: 2 },
+          py: { xs: 0.5, md: 1 },
+          height: "100vh",
+          position: "relative",
+        }}
+      >
+        {/* Logo */}
+        <Box sx={{ mt: { xs: 0, xl: "13px" } }}>
+          <Image
+            src="/medical-logo.png"
+            alt="Company Logo"
+            width={0}
+            height={0}
+            sizes="(max-width: 600px) 40px, (max-width: 900px) 60px, 160px"
+            style={{ objectFit: "contain", width: "clamp(160px, 12vw, 160px)", height: "auto" }}
+            priority
+          />
+        </Box>
+
+        {/* Form */}
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: "100%",
+            maxWidth: 420,
+            display: "flex",
+            flexDirection: "column",
+            gap: { xs: 1, md: 2 },
+            py: { xs: 0, md: 2 },
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          <Box textAlign="center">
+            <Typography fontWeight={700} fontSize={{ xs: "clamp(16px,1.8vw,20px)", lg: "20px" }} color="#3D3D3D">
+              Create New Password
+            </Typography>
+            <Typography fontSize="clamp(11px,1.3vw,13px)" color="#6b7280">
+              Set a secure password to continue
+            </Typography>
+          </Box>
+
+          {renderPasswordField("password", "Password", showPassword, () => setShowPassword(!showPassword))}
+          {renderPasswordField("confirmPassword", "Confirm Password", showConfirmPassword, () => setShowConfirmPassword(!showConfirmPassword))}
+
+          <Button
+            fullWidth
+            variant="contained"
+            type="submit"
+            disabled={!canSubmit || loading}
+            sx={{
+              backgroundColor: "#4285F4",
+              fontWeight: 600,
+              textTransform: "none",
+              borderRadius: "8px",
+              py: { sm: 0.8, xl: 2 },
+              fontSize: "clamp(12px,1.5vw,14px)",
+              "&:hover": { backgroundColor: "#3367D6" },
+              "&:disabled": { backgroundColor: "#ccc", cursor: "not-allowed" },
+            }}
+          >
+            {loading ? (
+              <>
+                Setting Password...
+                <CircularProgress size={22} sx={{ color: "#fff", ml: 1 }} />
+              </>
+            ) : (
+              "Continue"
+            )}
+          </Button>
+        </Box>
+
+        {/* Footer */}
+        <Box mb={{ sm: 0, xl: 3 }} position="relative" zIndex={1}>
+          <Typography
+            sx={{
+              mb: { sm: 0, xl: 3 },
+              color: "#6B7280",
+              textAlign: "center",
+              maxWidth: "90%",
+              mx: "auto",
+              lineHeight: 1.2,
+              fontSize: "clamp(9px,1vw,16px)",
+            }}
+          >
+            Join our platform to securely manage your healthcare facility, collaborate with your team, and access tools that enhance patient care.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Right Image */}
+      <Box
+        sx={{
+          display: { xs: "none", lg: "flex" },
+          flex: 1,
+          height: "calc(100% - 60px)",
+          mt: "30px",
+          mb: "30px",
+          position: "relative",
+          borderRadius: "24px",
+          overflow: "hidden",
+        }}
+      >
+        <Image
+          src="/login_bg.svg"
+          alt="Doctor"
+          fill
+          style={{
+            objectFit: "cover",
+            borderRadius: "24px",
+          }}
+          priority
+        />
+      </Box>
+    </Box>
+  );
+};
+
+export default CreatePasswordPage;

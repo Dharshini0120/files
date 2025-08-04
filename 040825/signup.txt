@@ -1,0 +1,489 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  IconButton,
+  OutlinedInput,
+  Chip,
+  CircularProgress,
+} from "@mui/material";
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import BusinessIcon from '@mui/icons-material/Business';
+import LanguageIcon from '@mui/icons-material/Language';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import HotelIcon from '@mui/icons-material/Hotel';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+import CloseIcon from '@mui/icons-material/Close';
+import { useMutation, useQuery } from '@apollo/client';
+import { SIGNUP_MUTATION } from '../../../graphql/mutations/auth';
+import { GET_FACILITY_TYPES, GET_SERVICE_LINES } from '../../../graphql/queries/facility';
+import { GetFacilityTypesData, GetServiceLinesData } from '../../../../../shared-types/src/facility/facility.types';
+import { SignUpInput } from '../../../../../shared-types/src/auth/auth.types';
+import { toast } from 'react-toastify';
+
+const states = ['Texas', 'California', 'New York'];
+const counties = ['Austin', 'Dallas', 'Harris'];
+
+interface FormState {
+  fullName: string;
+  email: string;
+  phone: string;
+  facilityName: string;
+  facilityType: string;
+  state: string;
+  county: string;
+  beds: string;
+  serviceLine: string[];
+}
+
+interface FormErrors {
+  [key: string]: string;
+}
+
+const SignUpPage: React.FC = () => {
+  const [tab, setTab] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const { data: facilityTypesData } = useQuery<GetFacilityTypesData>(GET_FACILITY_TYPES);
+  const facilityTypes =
+    facilityTypesData?.getFacilityTypes?.data?.filter((type) => type.isActive)?.map((type) => type.name) ||
+    ['Academic Hospital', 'Community Hospital', 'Clinic'];
+
+  const { data: serviceLinesData } = useQuery<GetServiceLinesData>(GET_SERVICE_LINES);
+  const serviceLines =
+    serviceLinesData?.getServiceLines?.data?.filter((line) => line.isActive)?.map((line) => line.name) ||
+    ['Ambulatory Surgical', 'Emergency Department', 'Inpatient Services', 'Outpatient Services', 'Specialty Care'];
+
+  const [form, setForm] = useState<FormState>({
+    fullName: '',
+    email: '',
+    phone: '',
+    facilityName: '',
+    facilityType: '',
+    state: '',
+    county: '',
+    beds: '',
+    serviceLine: [],
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  const fieldLabels: Record<keyof FormState, string> = {
+    fullName: 'Full Name',
+    email: 'Email ID',
+    phone: 'Phone Number',
+    facilityName: 'Facility Name',
+    facilityType: 'Facility Type',
+    state: 'State',
+    county: 'County',
+    beds: 'Number of Licensed Beds',
+    serviceLine: 'Service Lines',
+  };
+
+  const validateField = (name: string, value: any) => {
+    const label = fieldLabels[name as keyof FormState] || name;
+    if (!value || (Array.isArray(value) && value.length === 0)) return `${label} is required`;
+    if (name === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return `Please enter a valid ${label}`;
+    }
+    if (name === 'phone') {
+      const phoneRegex = /^[0-9()+\-\s]{7,15}$/;
+      if (!phoneRegex.test(value)) return `Please enter a valid ${label}`;
+    }
+    if (name === 'beds' && (isNaN(Number(value)) || value.length > 20)) return `Please enter a valid number for ${label}`;
+    if (name === 'fullName') {
+      const nameRegex = /^[A-Za-z ]{1,50}$/;
+      if (!nameRegex.test(value)) return `${label} should only contain alphabets and spaces (max 50)`;
+    }
+    return '';
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === 'fullName') {
+      const filtered = value.replace(/[^A-Za-z ]/g, '').slice(0, 50);
+      setForm({ ...form, [name]: filtered });
+      return;
+    }
+    if (name === 'email') {
+      const filtered = value.replace(/[{}|<>]/g, '');
+      setForm({ ...form, [name]: filtered });
+      return;
+    }
+    if (name === 'phone') {
+      const filtered = value.replace(/[^0-9()+\-\s]/g, '').slice(0, 15);
+      setForm({ ...form, [name]: filtered });
+      return;
+    }
+    if (name === 'beds') {
+      const filtered = value.replace(/[^0-9]/g, '').slice(0, 20);
+      setForm({ ...form, [name]: filtered });
+      return;
+    }
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleSelectChange = (name: string, value: any) => setForm({ ...form, [name]: value });
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) =>
+    setErrors((prev) => ({ ...prev, [e.target.name]: validateField(e.target.name, e.target.value) }));
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    Object.keys(form).forEach((key) => {
+      newErrors[key] = validateField(key, form[key as keyof FormState]);
+    });
+    setErrors(newErrors);
+    return Object.values(newErrors).every((err) => !err);
+  };
+
+  const isFormValid = () =>
+    form.fullName &&
+    form.email &&
+    form.phone &&
+    form.facilityName &&
+    form.facilityType &&
+    form.state &&
+    form.county &&
+    form.beds &&
+    form.serviceLine.length > 0;
+
+  const [signUp] = useMutation(SIGNUP_MUTATION);
+
+  const handleContinue = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setLoading(true);
+
+    try {
+      const input: SignUpInput = {
+        fullName: form.fullName,
+        email: form.email,
+        phoneNumber: form.phone,
+        facilityName: form.facilityName,
+        facilityType: form.facilityType,
+        state: form.state,
+        county: form.county,
+        numberOfLicensedBeds: parseInt(form.beds),
+        serviceLines: form.serviceLine,
+      };
+      const response = await signUp({ variables: { input } });
+      const result = response?.data?.signUp;
+
+      if (result?.statusCode === 409) {
+        toast.error("An account with this email address already exists");
+        return;
+      }
+      if (result?.status) {
+        toast.success('Registration initiated successfully! Check your email for OTP.');
+        setTimeout(() => router.push(`/auth/otp-verification?email=${encodeURIComponent(form.email)}`), 1000);
+      } else toast.error(result?.message || 'Registration failed');
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+ const menuProps = {
+    disableScrollLock: true,
+    disablePortal: true,
+    PaperProps: { sx: { maxHeight: 250 } },
+    anchorOrigin: { vertical: "bottom", horizontal: "left" },
+    transformOrigin: { vertical: "top", horizontal: "left" },
+    getContentAnchorEl: null,
+  };
+
+  // Render field
+  const renderField = (
+    name: keyof FormState,
+    label: string,
+    placeholder: string,
+    icon: React.ReactNode,
+    options?: string[],
+    isMulti?: boolean
+  ) => {
+    const hasValue = Array.isArray(form[name]) ? form[name].length > 0 : !!form[name];
+
+    // Multi-select with chips for serviceLine
+    if (name === 'serviceLine') {
+      return (
+        <TextField
+          select
+          SelectProps={{
+            multiple: true,
+            value: form.serviceLine,
+            onChange: (e) => handleSelectChange('serviceLine', e.target.value),
+            input: <OutlinedInput />,
+            renderValue: (selected) => (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                {(selected as string[]).map((value) => (
+                  <Chip
+                    key={value}
+                    label={value}
+                    onDelete={() =>
+                      setForm((prev) => ({
+                        ...prev,
+                        serviceLine: prev.serviceLine.filter((v) => v !== value),
+                      }))
+                    }
+                    size="small"
+                  />
+                ))}
+              </Box>
+            ),
+            displayEmpty: true,
+            MenuProps: menuProps,
+          }}
+          name={name}
+          label={label}
+          fullWidth
+          onBlur={() => handleBlur({ target: { name: "serviceLine", value: form.serviceLine } } as any)}
+          InputLabelProps={{
+            shrink: true,
+            sx: {
+              fontSize: "0.95rem",
+              color: "#9ca3af",
+              "&.Mui-focused": { color: "#9ca3af" },
+              transform: "translate(14px, 16px) scale(1)",
+              "&.MuiInputLabel-shrink": {
+                transform: "translate(14px, -8px) scale(0.85)",
+                backgroundColor: "#fff",
+                px: 0.5,
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start" sx={{ pr: 0.5 }}>
+                {icon}
+                <Box sx={{ height: 24, width: "1px", bgcolor: "#d1d5db", ml: 1 }} />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+          error={!!errors[name]}
+          helperText={errors[name] || " "}
+          FormHelperTextProps={{ sx: { minHeight: "24px", marginLeft: 0 } }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "12px",
+              backgroundColor: "#fff",
+              fontSize: "1rem",
+              minHeight: "56px",
+              "& fieldset": { borderColor: "#a8a8a8" },
+              "&:hover fieldset": { borderColor: "#808080" },
+              "&.Mui-focused fieldset": { borderColor: "#4285F4" },
+            },
+            "& .MuiOutlinedInput-input": { padding: "14px 10px" },
+          }}
+        >
+          <MenuItem disabled value="">
+            <span style={{ color: "#9ca3af" }}>Choose Service Line</span>
+          </MenuItem>
+          {options?.map((opt) => (
+            <MenuItem key={opt} value={opt}>
+              {opt}
+            </MenuItem>
+          ))}
+        </TextField>
+      );
+    }
+
+    return (
+      <TextField
+        key={`${name}-field`}
+        select={!!options}
+        SelectProps={{
+          multiple: isMulti,
+          value: form[name] as any,
+          onChange: (e) => handleSelectChange(name, e.target.value),
+          displayEmpty: true,
+          renderValue: (selected: any) =>
+            Array.isArray(selected) && selected.length > 0
+              ? selected.join(', ')
+              : selected || <span style={{ color: '#9ca3af' }}>{placeholder}</span>,
+          IconComponent: hasValue ? () => null : undefined,
+          MenuProps: menuProps,
+        }}
+        name={name}
+        value={form[name] as any}
+        onChange={(e) =>
+          options
+            ? handleSelectChange(name, e.target.value)
+            : handleInputChange(e as React.ChangeEvent<HTMLInputElement>)
+        }
+        onBlur={handleBlur}
+        label={label}
+        placeholder={!options ? placeholder : undefined}
+        fullWidth
+        InputLabelProps={{
+          shrink: true,
+          sx: {
+            fontSize: '0.95rem',
+            color: '#9ca3af',
+            '&.Mui-focused': { color: '#9ca3af' },
+            transform: 'translate(14px, 16px) scale(1)',
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -8px) scale(0.85)',
+              backgroundColor: '#fff',
+              px: 0.5,
+            },
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" sx={{ pr: 0.5 }}>
+              {icon}
+              <Box sx={{ height: 24, width: '1px', bgcolor: '#d1d5db', ml: 1 }} />
+            </InputAdornment>
+          ),
+          endAdornment:
+            options && hasValue ? (
+              <InputAdornment position="end">
+                <IconButton edge="end" onClick={() => handleSelectChange(name, '')} size="small">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : undefined,
+        }}
+        variant="outlined"
+        error={!!errors[name]}
+        helperText={errors[name] || ' '}
+        FormHelperTextProps={{ sx: { minHeight: '20px', marginLeft: 0 } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#fff',
+            fontSize: '1rem',
+            minHeight: '56px',
+            '& fieldset': { borderColor: '#a8a8a8' },
+            '&:hover fieldset': { borderColor: '#808080' },
+            '&.Mui-focused fieldset': { borderColor: '#4285F4' },
+          },
+          '& .MuiOutlinedInput-input': { padding: '14px 10px' },
+        }}
+      >
+        {options?.map((opt) => (
+          <MenuItem key={opt} value={opt}>
+            {opt}
+          </MenuItem>
+        ))}
+      </TextField>
+    );
+  };
+
+  return (
+<Box sx={{ display: "flex", bgcolor: "#fff", position: "relative", minHeight: "100vh" }}>
+
+      {/* Background Image */}
+     {/* Background Overlay */}
+<Box
+  sx={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: "url('/login_bg.svg')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    opacity: 0.1,
+    zIndex: 0,
+    minHeight: "100%",   // <-- important: matches content height
+  }}
+/>
+      
+      {/* Left Content */}
+      <Box sx={{ flex: 1.1, display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "center", px: 2, py: 1, position: "relative", zIndex: 1 }}>
+        <Box sx={{ mt: { xs: 0, xl: "13px" } }}>
+          <Image src="/medical-logo.png" alt="Company Logo" width={0} height={0} sizes="160px" style={{ objectFit: "contain", width: "clamp(160px, 12vw, 160px)", height: "auto" }} priority />
+        </Box>
+
+        <Box component="form" onSubmit={handleContinue} sx={{ width: "100%", maxWidth: 740, display: "flex", flexDirection: "column", gap: 2,  py: { xs: 0, md: 2 },}}>
+          <Box textAlign="center">
+            <Typography fontWeight={700} fontSize="20px" color="#3D3D3D">Create Account</Typography>
+            <Typography fontSize="13px" color="#6b7280">Please enter your details to continue</Typography>
+          </Box>
+
+          {/* Tabs */}
+          <Box position="relative" display="flex" width="100%" maxWidth="420px" mx="auto" borderRadius={2} bgcolor="#f0eeed"  p={{ xs: 0.8, sm: 0.8, lg: 1 }} mb={3}>
+            <Box position="absolute" top={3} left={tab === 0 ? 3 : "50%"} width="calc(50% - 6px)" height="calc(100% - 6px)" borderRadius={2} bgcolor="#fff" boxShadow={1} zIndex={1} sx={{ transition: "left 0.3s cubic-bezier(.4,1.3,.6,1)" }} />
+            <Button onClick={() => { setTab(0); router.push("/auth/signin"); }} sx={{ flex: 1, fontWeight: tab === 0 ? 700 : 500, fontSize: "16px", zIndex: 2, color: tab === 0 ? "#000" : "#9ca3af", textTransform: "none" }}>Sign In</Button>
+            <Button onClick={() => { setTab(1); router.push("/auth/signup"); }} sx={{ flex: 1, fontWeight: tab === 1 ? 700 : 500, fontSize: "16px", zIndex: 2, color: tab === 1 ? "#000" : "#9ca3af", textTransform: "none" }}>Sign Up</Button>
+          </Box>
+
+          {/* Fields */}
+          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2} px={{ sm: 2, md: 2 , lg: 0 }}>
+            {renderField("fullName", "Full Name", "Full Name", <PersonIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+            {renderField("email", "Email Address", "Email", <EmailIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+          </Box>
+          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2} px={{ sm: 2, md: 0 }}>
+            {renderField("phone", "Phone Number", "Phone Number", <LocalPhoneIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+            {renderField("facilityName", "Facility Name", "Facility Name", <BusinessIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+          </Box>
+          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2} px={{ sm: 2, md: 0 }}>
+            {renderField("facilityType", "Facility Type", "Select Facility Type", <ApartmentIcon fontSize="small" style={{ opacity: 0.7 }} />, facilityTypes)}
+            {renderField("state", "State", "Select State", <LanguageIcon fontSize="small" style={{ opacity: 0.7 }} />, states)}
+          </Box>
+          <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={2} px={{ sm: 2, md: 0 }}>
+            {renderField("county", "County", "Select County", <LanguageIcon fontSize="small" style={{ opacity: 0.7 }} />, counties)}
+            {renderField("beds", "Number of Licensed Beds", "Enter number of beds", <HotelIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+          </Box>
+          {renderField("serviceLine", "What service lines exist at your Facility", "Choose Service Line", <MiscellaneousServicesIcon fontSize="small" style={{ opacity: 0.7 }} />, serviceLines, true)}
+          {/* Button */}
+          <Button variant="contained" type="submit" disabled={!isFormValid() || loading} sx={{ backgroundColor: "#4285F4", fontWeight: 600, textTransform: "none", borderRadius: "8px", py: 1, fontSize: "14px", width: "100%", maxWidth: "420px", mx: "auto",mb:2 }}>
+            {loading ? <>Creating Account... <CircularProgress size={20} sx={{ color: "#fff", ml: 1 }} /></> : "Continue"}
+          </Button>
+        </Box>
+
+        <Box >
+          <Typography sx={{ color: "#6B7280", textAlign: "center", maxWidth: "90%", mx: "auto", lineHeight: 1.2, fontSize: "13px" ,mb: { sm: 0, xl: 3 }}}>
+            Join our platform to securely manage your healthcare facility, collaborate with your team, and access tools that enhance patient care.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Right Image */}
+     {/* Right Image */}
+<Box
+  sx={{
+    display: { xs: "none", lg: "flex" },
+    flex: 1,
+    alignSelf: "stretch",
+    mt: "30px",
+    mb: "30px",
+    position: "relative",
+    borderRadius: "24px",
+    overflow: "hidden",
+  }}
+>
+  <Image
+    src="/login_bg.svg"
+    alt="Doctor"
+    fill
+    style={{
+      objectFit: "cover",
+      borderRadius: "24px",
+    }}
+    priority
+  />
+</Box>
+
+    </Box>
+  );
+};
+
+export default SignUpPage;
