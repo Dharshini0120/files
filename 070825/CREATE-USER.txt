@@ -1,0 +1,342 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
+  Snackbar,
+  Alert,
+  Chip,
+  OutlinedInput,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+} from '@mui/material';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { PageHeader } from '../../../components/PageHeader';
+import DashboardLayout from '../../../components/layout/DashboardLayout';
+import { AddOutlined } from '@mui/icons-material';
+import { useQuery, useMutation } from '@apollo/client';
+import {
+  GET_FACILITY_TYPES,
+  GET_SERVICE_LINES,
+  GET_USER_BY_ID,
+  CREATE_USER_MUTATION,
+  UPDATE_USER_MUTATION,
+} from '../../../graphql/user.service';
+import { GetUserByIdResponse } from '@shared-types/auth/auth.types';
+
+const states = ['Texas', 'California', 'New York'];
+const counties = ['Austin', 'Dallas', 'Harris'];
+
+const CreateUserPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id');
+  const isEditMode = !!userId;
+
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    facilityName: '',
+    facilityType: '',
+    state: '',
+    county: '',
+    numberOfLicensedBeds: '',
+    serviceLines: [] as string[],
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  const { data: facilityTypesData } = useQuery(GET_FACILITY_TYPES);
+  const { data: serviceLinesData } = useQuery(GET_SERVICE_LINES);
+  const { data: userData, loading: userLoading } = useQuery<{ getUserById: GetUserByIdResponse }>(
+    GET_USER_BY_ID,
+    {
+      skip: !userId,
+      variables: { userId },
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const [createUser] = useMutation(CREATE_USER_MUTATION);
+  const [updateUser] = useMutation(UPDATE_USER_MUTATION);
+
+  const facilityTypes =
+    facilityTypesData?.getFacilityTypes?.data?.filter((f: any) => f.isActive)?.map((f: any) => f.name) || [];
+
+  const serviceLinesList =
+    serviceLinesData?.getServiceLines?.data?.filter((s: any) => s.isActive)?.map((s: any) => s.name) || [];
+
+  useEffect(() => {
+    if (isEditMode && userData?.getUserById?.data?.user) {
+      const user = userData.getUserById.data.user;
+      setFormData({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        phoneNumber: user.phoneNumber || '',
+        facilityName: user.facilityName || '',
+        facilityType: user.facilityType?.name || '',
+        state: user.state || '',
+        county: user.county || '',
+        numberOfLicensedBeds: String(user.numberOfLicensedBeds || ''),
+        serviceLines: user.serviceLines || [],
+      });
+    }
+  }, [isEditMode, userData]);
+
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleMultiSelect = (e: any) => {
+    const {
+      target: { value },
+    } = e;
+    setFormData((prev) => ({
+      ...prev,
+      serviceLines: typeof value === 'string' ? value.split(',') : value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (!formData.facilityType || formData.serviceLines.length === 0) {
+        throw new Error('Please select a valid facility type and at least one service line.');
+      }
+
+      const {
+        fullName,
+        email,
+        phoneNumber,
+        facilityName,
+        facilityType,
+        state,
+        county,
+        numberOfLicensedBeds,
+        serviceLines,
+      } = formData;
+
+      const input = {
+        fullName,
+        email,
+        phoneNumber,
+        facilityName,
+        facilityType, // sending name
+        state,
+        county,
+        numberOfLicensedBeds: Number(numberOfLicensedBeds),
+        serviceLines, // sending name array
+      };
+
+      const response = isEditMode
+        ? await updateUser({ variables: { userId, input } })
+        : await createUser({ variables: { input } });
+
+      const result = isEditMode ? response.data.updateUser : response.data.createUser;
+
+      if (result?.status) {
+        setSnackbar({ open: true, message: result.message, severity: 'success' });
+        router.push('/users');
+      } else {
+        throw new Error(result?.error || 'Operation failed');
+      }
+    } catch (error: any) {
+      setSnackbar({ open: true, message: error.message, severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isEditMode && userLoading) {
+    return (
+      <DashboardLayout>
+        <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
+          <CircularProgress />
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <Box>
+        <PageHeader
+          title={isEditMode ? 'Edit User' : 'Create New User'}
+          subtitle={isEditMode ? 'Update the user details' : 'Enter the details to create a new user'}
+          showBackButton={true}
+          showActionButton={!isEditMode}
+          actionButtonText="Create User"
+          actionButtonIcon={<AddOutlined />}
+        />
+
+        <Paper sx={{ p: 3, borderRadius: '10px', border: '1px solid #eff0f1', boxShadow: 'none' }}>
+          <Box component="form" onSubmit={handleSubmit}>
+            <Typography variant="h6" fontWeight={600} mb={3}>
+              User Details
+            </Typography>
+
+            {/* Row 1 */}
+            <Box display="flex" gap={2}>
+              <TextField
+                label="Full Name"
+                name="fullName"
+                fullWidth
+                margin="normal"
+                value={formData.fullName}
+                onChange={handleChange}
+              />
+              <TextField
+                label="Email"
+                name="email"
+                fullWidth
+                margin="normal"
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isEditMode}
+              />
+              <TextField
+                label="Phone Number"
+                name="phoneNumber"
+                fullWidth
+                margin="normal"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+              />
+            </Box>
+
+            {/* Row 2 */}
+            <Box display="flex" gap={2}>
+              <TextField
+                label="Facility Name"
+                name="facilityName"
+                fullWidth
+                margin="normal"
+                value={formData.facilityName}
+                onChange={handleChange}
+              />
+              <TextField
+                select
+                label="Facility Type"
+                name="facilityType"
+                fullWidth
+                margin="normal"
+                value={formData.facilityType}
+                onChange={handleChange}
+              >
+                {facilityTypes.map((type: string) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                label="State"
+                name="state"
+                fullWidth
+                margin="normal"
+                value={formData.state}
+                onChange={handleChange}
+              >
+                {states.map((state) => (
+                  <MenuItem key={state} value={state}>
+                    {state}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+
+            {/* Row 3 */}
+            <Box display="flex" gap={2}>
+              <TextField
+                select
+                label="County"
+                name="county"
+                fullWidth
+                margin="normal"
+                value={formData.county}
+                onChange={handleChange}
+              >
+                {counties.map((county) => (
+                  <MenuItem key={county} value={county}>
+                    {county}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Number of Licensed Beds"
+                name="numberOfLicensedBeds"
+                fullWidth
+                margin="normal"
+                value={formData.numberOfLicensedBeds}
+                onChange={handleChange}
+              />
+            </Box>
+
+            {/* Service Lines */}
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="service-lines-label">Service Lines</InputLabel>
+              <Select
+                labelId="service-lines-label"
+                multiple
+                value={formData.serviceLines}
+                onChange={handleMultiSelect}
+                input={<OutlinedInput label="Service Lines" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {(selected as string[]).map((value) => (
+                      <Chip key={value} label={value} />
+                    ))}
+                  </Box>
+                )}
+              >
+                {serviceLinesList.map((line: string) => (
+                  <MenuItem key={line} value={line}>
+                    {line}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Action Buttons */}
+            <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+              {isEditMode && (
+                <Button variant="outlined" onClick={() => router.back()} sx={{ width: 130 }}>
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" variant="contained" sx={{ width: 130 }}>
+                {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Save'}
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity={snackbar.severity as any} sx={{ width: '100%', fontWeight: 600 }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </DashboardLayout>
+  );
+};
+
+export default CreateUserPage;

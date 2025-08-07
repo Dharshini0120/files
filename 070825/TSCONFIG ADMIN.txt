@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@frontend/shared-ui": [
+        "../../libs/shared-ui/src/index.ts"
+      ],
+      "@frontend/apollo-client": [
+        "../../libs/apollo-client.ts"
+      ],
+        "@shared-types/*": [
+        "../../libs/shared-types/src/*"
+      ]
+    },
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "target": "ES2017"
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "../../dist/apps/admin-portal/.next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
