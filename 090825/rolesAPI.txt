@@ -1,0 +1,110 @@
+Dashboard
+User Management	
+Audit Logs
+Templates		
+Assessment-Recorrds
+Role & Access
+Settings
+security
+Help
+
+"mutation {
+  getAllRoles {
+    status
+    message
+    statusCode
+    data
+    error
+  }
+}"
+
+
+"{
+  ""data"": {
+    ""getAllRoles"": {
+      ""status"": ""success"",
+      ""message"": ""Roles fetched successfully"",
+      ""statusCode"": 200,
+      ""data"": [
+        {
+          ""_id"": ""6893667cd23f36afae457fc8"",
+          ""roleName"": ""super_admin"",
+          ""permissions"": [
+            ""Dashboard"",
+            ""Usermanagement"",
+            ""Assessment Engine or Template"",
+            ""assessment list"",
+            ""settings"",
+            ""auditlogs""
+          ],
+          ""createdAt"": ""2025-08-06T14:28:12.703Z"",
+          ""updatedAt"": ""2025-08-07T04:59:59.531Z""
+        },
+        {
+          ""_id"": ""6893667cd23f36afae457fc9"",
+          ""roleName"": ""admin"",
+          ""permissions"": [
+            ""Dashboard"",
+            ""Assessment Engine or Template"",
+            ""settings""
+          ],
+          ""createdAt"": ""2025-08-06T14:28:12.712Z"",
+          ""updatedAt"": ""2025-08-07T04:59:59.543Z""
+        },
+        {
+          ""_id"": ""6893667cd23f36afae457fca"",
+          ""roleName"": ""user"",
+          ""permissions"": [
+            ""Dashboard"",
+            ""assessment list"",
+            ""settings""
+          ],
+          ""createdAt"": ""2025-08-06T14:28:12.737Z"",
+          ""updatedAt"": ""2025-08-07T04:59:59.547Z""
+        },
+        {
+          ""_id"": ""689370863012a1e957073a3a"",
+          ""roleName"": ""hospital"",
+          ""permissions"": [
+            ""Dashboard"",
+            ""Settings"",
+            ""Assessment Engine""
+          ],
+          ""createdAt"": ""2025-08-06T15:11:02.104Z"",
+          ""updatedAt"": ""2025-08-06T15:22:12.544Z""
+        }
+      ],
+      ""error"": null
+    }
+  }
+}"
+
+"mutation CreateRole {
+  createRole(input: {
+    roleName: ""hospital""
+  })  {
+    status
+    message
+    statusCode
+    data
+    error
+  }
+}"
+
+"{
+  ""data"": {
+    ""createRole"": {
+      ""status"": ""success"",
+      ""message"": ""Role created successfully"",
+      ""statusCode"": 201,
+      ""data"": {
+        ""_id"": ""689370863012a1e957073a3a"",
+        ""roleName"": ""hospital"",
+        ""permissions"": [],
+        ""createdAt"": ""2025-08-06T15:11:02.104Z"",
+        ""updatedAt"": ""2025-08-06T15:11:02.104Z""
+      },
+      ""error"": null
+    }
+  }
+}"
