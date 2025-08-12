@@ -1,0 +1,521 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import React, { useMemo, useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  Tabs,
+  Tab,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Tooltip,
+  Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
+import { AddOutlined, Edit, Delete as DeleteIcon } from "@mui/icons-material";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+
+type Role = { id: string; name: string; description?: string };
+type PermissionKey = "create" | "read" | "update" | "delete";
+type ModuleDef = { key: string; label: string };
+
+const gradientButtonSx = {
+  background: "linear-gradient(90deg, #408bff 0%, #3a7de6 100%)",
+  textTransform: "none",
+  letterSpacing: "0.5px",
+  fontWeight: 500,
+  fontFamily: "var(--font-inter), sans-serif",
+  borderRadius: "4px",
+  padding: "8px 24px",
+  boxShadow: "0 2px 8px rgba(64, 139, 255, 0.25)",
+  "&:hover": {
+    background: "linear-gradient(90deg, #3a7de6 0%, #3670cc 100%)",
+    boxShadow: "0 4px 12px rgba(64, 139, 255, 0.3)",
+  },
+};
+
+const headerCellSx = {
+  backgroundColor: "#f3f7ff",
+  color: "#1f2937",
+  fontWeight: 700,
+  borderBottom: "1px solid #e6ecf5",
+};
+
+// Custom checkbox with visible black border
+function BorderedCheckbox(props: React.ComponentProps<typeof Checkbox>) {
+  const Unchecked = (
+    <span
+      style={{
+        width: 18,
+        height: 18,
+        border: "1.5px solid #000",
+        borderRadius: 3,
+        display: "inline-block",
+        background: "#fff",
+      }}
+    />
+  );
+  const Checked = (
+    <span
+      style={{
+        width: 18,
+        height: 18,
+        borderRadius: 3,
+        display: "inline-block",
+        background: "#3a7de6",
+        position: "relative",
+        boxShadow: "inset 0 0 0 1.5px #3a7de6",
+      }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        style={{
+          position: "absolute",
+          inset: 0,
+          margin: "auto",
+          width: 18,
+          height: 18,
+          fill: "none",
+          stroke: "white",
+          strokeWidth: 3,
+        }}
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </span>
+  );
+
+  return (
+    <Checkbox
+      disableRipple
+      color="default"
+      icon={Unchecked}
+      checkedIcon={Checked}
+      {...props}
+      sx={{ p: 0.5 }}
+    />
+  );
+}
+
+const RolesAccessPage: React.FC = () => {
+  const [tab, setTab] = useState(0);
+
+  // Roles
+  const [roles, setRoles] = useState<Role[]>([
+    { id: "1", name: "SuperAdmin", description: "Full access" },
+    { id: "2", name: "Hospital Administrator", description: "Manage hospital data" },
+    { id: "3", name: "User", description: "Take Assessments" },
+  ]);
+
+  // Add/Edit dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [formName, setFormName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
+
+  // Delete confirm dialog
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+
+  const openAdd = () => {
+    setEditingRole(null);
+    setFormName("");
+    setFormDesc("");
+    setDialogOpen(true);
+  };
+  const openEdit = (role: Role) => {
+    setEditingRole(role);
+    setFormName(role.name);
+    setFormDesc(role.description || "");
+    setDialogOpen(true);
+  };
+  const saveRole = () => {
+    if (!formName.trim()) return;
+    if (editingRole) {
+      setRoles((prev) =>
+        prev.map((r) =>
+          r.id === editingRole.id
+            ? { ...r, name: formName.trim(), description: formDesc.trim() }
+            : r
+        )
+      );
+    } else {
+      setRoles((prev) => [
+        ...prev,
+        { id: String(Date.now()), name: formName.trim(), description: formDesc.trim() },
+      ]);
+    }
+    setDialogOpen(false);
+  };
+
+  const openDelete = (role: Role) => {
+    setRoleToDelete(role);
+    setDeleteOpen(true);
+  };
+  const confirmDelete = () => {
+    if (!roleToDelete) return;
+    setRoles((prev) => prev.filter((x) => x.id !== roleToDelete.id));
+    setDeleteOpen(false);
+    setRoleToDelete(null);
+  };
+
+  // Access Rights
+  const modules: ModuleDef[] = useMemo(
+    () => [
+      { key: "dashboard", label: "Dashboard" },
+      { key: "user_mgmt", label: "Admin Management" },
+      { key: "audit_logs", label: "Audit Logs" },
+      { key: "templates", label: "Templates" },
+      { key: "assessment_records", label: "Assessment Records" },
+      { key: "roles_access", label: "Role & Access" },
+      { key: "settings", label: "Settings" },
+      { key: "security", label: "Security" },
+      { key: "help", label: "Help" },
+    ],
+    []
+  );
+
+  const [activeRoleId, setActiveRoleId] = useState("2"); // default to Hospital Administrator
+
+  const [permissions, setPermissions] = useState<
+    Record<string, Record<string, Record<PermissionKey, boolean>>>
+  >({});
+
+  useEffect(() => {
+    setPermissions((prev) => {
+      const next = { ...prev };
+      for (const role of roles) {
+        next[role.id] ??= {};
+        for (const m of modules) {
+          next[role.id][m.key] ??= {
+            create: false,
+            read: false,
+            update: false,
+            delete: false,
+          };
+        }
+      }
+      // cleanup
+      Object.keys(next).forEach((rid) => {
+        if (!roles.some((r) => r.id === rid)) delete next[rid];
+      });
+      Object.values(next).forEach((byModule) => {
+        Object.keys(byModule).forEach((mk) => {
+          if (!modules.some((m) => m.key === mk)) delete byModule[mk];
+        });
+      });
+      return next;
+    });
+  }, [roles, modules]);
+
+  const togglePerm = (roleId: string, moduleKey: string, key: PermissionKey) =>
+    setPermissions((p) => ({
+      ...p,
+      [roleId]: {
+        ...p[roleId],
+        [moduleKey]: {
+          ...p[roleId][moduleKey],
+          [key]: !p[roleId][moduleKey][key],
+        },
+      },
+    }));
+
+  const saveAccess = () => {
+    // hook your API here (permissions[activeRoleId])
+    alert("Save permissions API here");
+  };
+
+  // Column order: Read first, then Create, Update, Delete
+  const permDisplayOrder: PermissionKey[] = ["read", "create", "update", "delete"];
+
+  return (
+    <DashboardLayout>
+      <Box>
+        {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+            px: { xs: 0.5, md: 1 }, // tiny side padding
+          }}
+        >
+          <Box>
+            <Typography variant="h5" fontWeight={700} sx={{ fontFamily: "var(--font-inter), sans-serif" }}>
+              Roles & Access
+            </Typography>
+            <Typography variant="subtitle1" color="#6c757d" sx={{ fontFamily: "var(--font-inter), sans-serif" }}>
+              Manage roles and set access permissions
+            </Typography>
+          </Box>
+          {tab === 0 && (
+            <Button onClick={openAdd} variant="contained" size="large" sx={gradientButtonSx}>
+              <AddOutlined sx={{ mr: 1 }} />
+              Add New Role
+            </Button>
+          )}
+        </Box>
+
+        <Paper sx={{ borderRadius: "12px", p: { xs: 1.5, md: 2 }, pt: 2 }}>
+          {/* Tabs */}
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            sx={{
+              px: 1,
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontWeight: 600,
+                mr: 2,
+                color: "#6b6b6b",
+                "&.Mui-selected": {
+                  color: "#000",
+                  backgroundColor: "#f5f9ff",
+                  borderRadius: "8px 8px 0 0",
+                  fontWeight: 700,
+                },
+              },
+              "& .MuiTabs-indicator": {
+                height: 3,
+                borderRadius: 2,
+                backgroundColor: "#3a7de6",
+              },
+            }}
+          >
+            <Tab label="Roles" />
+            <Tab label="Access Rights" />
+          </Tabs>
+
+          <Divider sx={{ mt: 1, mb: 2 }} />
+
+          {/* ROLES: expanded table with little side space */}
+          {tab === 0 && (
+            <Box sx={{ overflowX: "auto", px: { xs: 0.5, md: 1 } }}>
+              <Table sx={{ width: "100%" }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={headerCellSx} width={80}>
+                      S.No
+                    </TableCell>
+                    <TableCell sx={headerCellSx}>Role Name</TableCell>
+                    <TableCell sx={headerCellSx}>Description</TableCell>
+                    <TableCell sx={{ ...headerCellSx, textAlign: "right" }} width={160}>
+                      Actions
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {roles.map((role, idx) => (
+                    <TableRow
+                      key={role.id}
+                      sx={{
+                        backgroundColor: idx % 2 ? "#f5f5f5" : "#fff",
+                        "& td": { borderBottom: "1px solid #eef2f7" },
+                      }}
+                    >
+                      <TableCell>{idx + 1}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{role.name}</TableCell>
+                      <TableCell sx={{ color: "#6b7280" }}>
+                        {role.description || "No description"}
+                      </TableCell>
+                      <TableCell sx={{ textAlign: "right" }}>
+                        <Tooltip title="Edit">
+                          <IconButton onClick={() => openEdit(role)}>
+                            <Edit style={{ fontSize: 25, color: "#408bff" }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton onClick={() => openDelete(role)}>
+                            <DeleteIcon style={{ fontSize: 25, color: "#e53935" }} />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
+
+          {/* ACCESS RIGHTS: no card, same expanded table style as Roles; Read first */}
+          {tab === 1 && (
+            <Box sx={{ px: { xs: 0.5, md: 1 } }}>
+              {/* Role selector (kept) */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, my: 3 }}>
+                <FormControl sx={{ minWidth: 260 }}>
+                  <InputLabel>Select Role</InputLabel>
+                  <Select
+                    label="Select Role"
+                    value={activeRoleId}
+                    onChange={(e) => setActiveRoleId(String(e.target.value))}
+                    size="small"
+                    sx={{
+                      height: 40,
+                      backgroundColor: "#fff",
+                      boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
+                      "& .MuiOutlinedInput-notchedOutline": { borderColor: "#e6ecf5" },
+                      "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#cfd7e6" },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#408bff" },
+                    }}
+                  >
+                    {roles.map((r) => (
+                      <MenuItem key={r.id} value={r.id}>
+                        {r.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Table sx={{ width: "100%" }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ ...headerCellSx, width: 320 }}>Module</TableCell>
+                    <TableCell sx={headerCellSx} align="center">
+                      Read
+                    </TableCell>
+                    <TableCell sx={headerCellSx} align="center">
+                      Create
+                    </TableCell>
+                    <TableCell sx={headerCellSx} align="center">
+                      Update
+                    </TableCell>
+                    <TableCell sx={headerCellSx} align="center">
+                      Delete
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {modules.map((m, i) => (
+                    <TableRow
+                      key={m.key}
+                      sx={{
+                        backgroundColor: i % 2 ? "#f5f5f5" : "#fff",
+                        "& td": { borderBottom: "1px solid #eef2f7" },
+                      }}
+                    >
+                      <TableCell sx={{ fontWeight: 600 }}>{m.label}</TableCell>
+                      {permDisplayOrder.map((k) => (
+                        <TableCell key={`${m.key}-${k}`} align="center">
+                          <FormControlLabel
+                            sx={{ m: 0 }}
+                            control={
+                              <BorderedCheckbox
+                                checked={Boolean(permissions[activeRoleId]?.[m.key]?.[k])}
+                                onChange={() => togglePerm(activeRoleId, m.key, k)}
+                              />
+                            }
+                            label=""
+                          />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              <Box sx={{ display: "flex", justifyContent: "center", py: 2.5 }}>
+                <Button variant="contained" sx={gradientButtonSx} onClick={saveAccess}>
+                  Save For Changes
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Paper>
+
+        {/* Add/Edit Role Dialog */}
+        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ fontWeight: 700 }}>
+            {editingRole ? "Edit Role" : "Add New Role"}
+          </DialogTitle>
+          <DialogContent sx={{ pt: 1 }}>
+            <TextField
+              fullWidth
+              label="Role Name"
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              sx={{ mt: 1.5 }}
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              value={formDesc}
+              onChange={(e) => setFormDesc(e.target.value)}
+              sx={{ mt: 2 }}
+              multiline
+              minRows={2}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setDialogOpen(false)}
+              sx={{
+                textTransform: "uppercase",
+                fontWeight: 500,
+                color: "#408bff",
+                borderColor: "#408bff",
+                px: 3,
+                "&:hover": { backgroundColor: "rgba(64, 139, 255, 0.04)", borderColor: "#408bff" },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={saveRole} variant="contained" sx={gradientButtonSx}>
+              {editingRole ? "Save" : "Create"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Role Dialog */}
+        <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ fontWeight: 700 }}>Delete Role</DialogTitle>
+          <DialogContent sx={{ pt: 1 }}>
+            <Typography>
+              Are you sure you want to delete the role <strong>{roleToDelete?.name}</strong>?
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setDeleteOpen(false)}
+              sx={{
+                textTransform: "uppercase",
+                fontWeight: 500,
+                color: "#408bff",
+                borderColor: "#408bff",
+                px: 3,
+                "&:hover": { backgroundColor: "rgba(64, 139, 255, 0.04)", borderColor: "#408bff" },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="contained" color="error" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </DashboardLayout>
+  );
+};
+
+export default RolesAccessPage;
