@@ -1,0 +1,493 @@
+templateDrafts[
+  {
+    "id": "1754992817398",
+    "name": "Hospital Questionary",
+    "description": "Hospital Questionary desc",
+    "nodes": [
+      {
+        "id": "section-1",
+        "type": "sectionNode",
+        "position": {
+          "x": -35.999999999999915,
+          "y": -205.99999999999983
+        },
+        "data": {
+          "sectionName": "Hospital",
+          "weight": 10
+        },
+        "width": 306,
+        "height": 144,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -35.999999999999915,
+          "y": -205.99999999999983
+        },
+        "dragging": false
+      },
+      {
+        "id": "q1",
+        "type": "questionNode",
+        "position": {
+          "x": -637.9999999999994,
+          "y": -13.999999999999773
+        },
+        "data": {
+          "question": "How is your Infection Prevention Program managed?",
+          "questionType": "radio",
+          "options": [
+            "Onsite",
+            "Offsite (remote) or Corporate",
+            "In policy alone",
+            "Do not have one"
+          ],
+          "isRequired": true
+        },
+        "width": 354,
+        "height": 224,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -637.9999999999994,
+          "y": -13.999999999999773
+        },
+        "dragging": false
+      },
+      {
+        "id": "q2",
+        "type": "questionNode",
+        "position": {
+          "x": -139.99999999999977,
+          "y": 293.99999999999994
+        },
+        "data": {
+          "question": "Does your organization have a dedicated Hospital Epidemiologist with appropriate training?",
+          "questionType": "radio",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "isRequired": true
+        },
+        "width": 354,
+        "height": 208,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -139.99999999999977,
+          "y": 293.99999999999994
+        },
+        "dragging": false
+      },
+      {
+        "id": "q3",
+        "type": "questionNode",
+        "position": {
+          "x": 453.9999999999998,
+          "y": 184.0000000000004
+        },
+        "data": {
+          "question": "Does your organization employ Infection Preventionists?",
+          "questionType": "radio",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "isRequired": true
+        },
+        "width": 354,
+        "height": 188,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 453.9999999999998,
+          "y": 184.0000000000004
+        },
+        "dragging": false
+      },
+      {
+        "id": "q4",
+        "type": "questionNode",
+        "position": {
+          "x": -1109.9999999999986,
+          "y": 460.0000000000002
+        },
+        "data": {
+          "question": "Does your organization have an electronic health record (E.H.R)?",
+          "questionType": "radio",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "isRequired": true
+        },
+        "width": 354,
+        "height": 188,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -1109.9999999999986,
+          "y": 460.0000000000002
+        },
+        "dragging": false
+      },
+      {
+        "id": "q5a",
+        "type": "questionNode",
+        "position": {
+          "x": -583.9999999999995,
+          "y": 670.0000000000005
+        },
+        "data": {
+          "question": "Does your Infection Prevention Surveillance System integrate with your Electronic Health Record (E.H.R)?",
+          "questionType": "radio",
+          "options": [
+            "Yes",
+            "No",
+            "Not sure"
+          ],
+          "isRequired": true
+        },
+        "width": 354,
+        "height": 226,
+        "selected": true,
+        "positionAbsolute": {
+          "x": -583.9999999999995,
+          "y": 670.0000000000005
+        },
+        "dragging": false
+      },
+      {
+        "id": "q5b",
+        "type": "questionNode",
+        "position": {
+          "x": -1053.9999999999989,
+          "y": 844.0000000000002
+        },
+        "data": {
+          "question": "Do you have a paper Health Record?",
+          "questionType": "radio",
+          "options": [
+            "Yes",
+            "No"
+          ],
+          "isRequired": true
+        },
+        "width": 286,
+        "height": 167,
+        "selected": false,
+        "positionAbsolute": {
+          "x": -1053.9999999999989,
+          "y": 844.0000000000002
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "q1-end-policy",
+        "source": "q1",
+        "target": null,
+        "type": "smoothstep",
+        "data": {
+          "optionText": "In policy alone",
+          "sourceHandle": "option-2",
+          "endAction": "Refer to Consultant"
+        },
+        "label": "Refer to Consultant"
+      },
+      {
+        "id": "q1-end-no-program",
+        "source": "q1",
+        "target": null,
+        "type": "smoothstep",
+        "data": {
+          "optionText": "Do not have one",
+          "sourceHandle": "option-3",
+          "endAction": "Refer to Consultant"
+        },
+        "label": "Refer to Consultant"
+      },
+      {
+        "id": "q2-end-no",
+        "source": "q2",
+        "target": null,
+        "type": "smoothstep",
+        "data": {
+          "optionText": "No",
+          "sourceHandle": "option-1",
+          "endAction": "Refer to Consultant"
+        },
+        "label": "Refer to Consultant"
+      },
+      {
+        "id": "q3-end-no",
+        "source": "q3",
+        "target": null,
+        "type": "smoothstep",
+        "data": {
+          "optionText": "No",
+          "sourceHandle": "option-1",
+          "endAction": "Refer to Consultant"
+        },
+        "label": "Refer to Consultant"
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "section-1",
+        "sourceHandle": null,
+        "target": "q1",
+        "targetHandle": null,
+        "id": "section-1-q1-default-1754568302792",
+        "data": {
+          "optionText": "Default",
+          "sourceHandle": null
+        },
+        "label": "Default",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "q1",
+        "sourceHandle": "option-0",
+        "target": "q2",
+        "targetHandle": null,
+        "id": "q1-q2-option-0-1754568307432",
+        "data": {
+          "optionText": "Onsite",
+          "sourceHandle": "option-0",
+          "condition": "radio"
+        },
+        "label": "Onsite",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "q1",
+        "sourceHandle": "option-1",
+        "target": "q2",
+        "targetHandle": null,
+        "id": "q1-q2-option-1-1754568309232",
+        "data": {
+          "optionText": "Offsite (remote) or Corporate",
+          "sourceHandle": "option-1",
+          "condition": "radio"
+        },
+        "label": "Offsite (remote) or Corporate",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "q2",
+        "sourceHandle": "option-0",
+        "target": "q3",
+        "targetHandle": null,
+        "id": "q2-q3-option-0-1754568317032",
+        "data": {
+          "optionText": "Yes",
+          "sourceHandle": "option-0",
+          "condition": "radio"
+        },
+        "label": "Yes",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "q3",
+        "sourceHandle": "option-0",
+        "target": "q4",
+        "targetHandle": null,
+        "id": "q3-q4-option-0-1754568422147",
+        "data": {
+          "optionText": "Yes",
+          "sourceHandle": "option-0",
+          "condition": "radio"
+        },
+        "label": "Yes",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "q4",
+        "sourceHandle": "option-0",
+        "target": "q5a",
+        "targetHandle": null,
+        "id": "q4-q5a-option-0-1754568513075",
+        "data": {
+          "optionText": "Yes",
+          "sourceHandle": "option-0",
+          "condition": "radio"
+        },
+        "label": "Yes",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      },
+      {
+        "type": "smoothstep",
+        "animated": true,
+        "style": {
+          "stroke": "#2196f3",
+          "strokeWidth": 2,
+          "strokeDasharray": "5,5"
+        },
+        "source": "q4",
+        "sourceHandle": "option-1",
+        "target": "q5b",
+        "targetHandle": null,
+        "id": "q4-q5b-option-1-1754568542330",
+        "data": {
+          "optionText": "No",
+          "sourceHandle": "option-1",
+          "condition": "radio"
+        },
+        "label": "No",
+        "labelStyle": {
+          "fill": "#2196f3",
+          "fontWeight": 600,
+          "fontSize": "12px"
+        },
+        "labelBgStyle": {
+          "fill": "white",
+          "fillOpacity": 0.9,
+          "rx": 4,
+          "stroke": "#2196f3",
+          "strokeWidth": 1
+        },
+        "labelBgPadding": [
+          4,
+          8
+        ],
+        "labelShowBg": true
+      }
+    ],
+    "createdAt": "2025-08-12T10:00:17.398Z",
+    "updatedAt": "2025-08-12T10:00:17.398Z",
+    "status": "Completed"
+  }
+]
