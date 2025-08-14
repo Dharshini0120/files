@@ -1,0 +1,223 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  InputAdornment,
+  CircularProgress,
+} from "@mui/material";
+import { Email } from "@mui/icons-material";
+import { Inter } from "next/font/google";
+import { toast } from "react-toastify";
+import { useMutation } from "@apollo/client";
+import { useRouter } from "next/navigation";
+
+// GraphQL
+import {
+  FORGOT_PASSWORD_MUTATION,
+  ADMIN_FORGOT_PASSWORD_MUTATION,
+} from "../../../graphql/mutations/auth";
+
+// Shared UI
+import AuthLayout from "../_shared/AuthLayout";
+import HeaderLogo from "../_shared/HeaderLogo";
+import AuthButton from "../_shared/AuthButton";
+import AuthFooterNote from "../_shared/AuthFooterNote";
+import RightImage from "../_shared/RightImage";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+
+interface ForgotPasswordInput {
+  email: string;
+}
+
+interface ForgotPasswordPageProps {
+  type?:  "user" | "admin";
+}
+
+const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ type }) => {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState<{ email?: string }>({});
+  const [shake, setShake] = useState(false);
+
+  // user + admin mutations (choose at runtime)
+  const [forgotPasswordUser, { loading: userLoading }] = useMutation(FORGOT_PASSWORD_MUTATION);
+  const [forgotPasswordAdmin, { loading: adminLoading }] = useMutation(ADMIN_FORGOT_PASSWORD_MUTATION);
+  const loading = userLoading || adminLoading;
+
+  // Portal detection: props first; fallback to runtime (keeps old behavior)
+  const isAdminFromProp =
+    type === "admin" 
+  const runtimeAdmin =
+    typeof window !== "undefined" &&
+    (window.location.pathname.includes("/admin") || window.location.hostname.includes("admin"));
+  const isAdminPortal = Boolean(isAdminFromProp || runtimeAdmin);
+
+  const validateEmailFormat = (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value) setErrors({ email: "Email is required" });
+    else if (!validateEmailFormat(value))
+      setErrors({ email: "Please enter a valid email address" });
+    else setErrors({});
+  };
+
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setErrors({ email: "Email is required" });
+      triggerShake();
+      return;
+    }
+    if (!validateEmailFormat(email)) {
+      setErrors({ email: "Please enter a valid email address" });
+      triggerShake();
+      return;
+    }
+
+    try {
+      const input: ForgotPasswordInput = { email };
+
+      let result: any | undefined;
+      if (isAdminPortal) {
+        // ADMIN flow → adminforgotPassword
+        const response = await forgotPasswordAdmin({ variables: { input } });
+        result = response?.data?.adminforgotPassword;
+      } else {
+        // USER flow → forgotPassword
+        const response = await forgotPasswordUser({ variables: { input } });
+        result = response?.data?.forgotPassword;
+      }
+
+      const apiMessage = result?.message || "Something went wrong";
+
+      if (result?.status === "success") {
+        setErrors({});
+        toast.success(apiMessage);
+        // keep your original redirect exactly the same:
+        router.push(
+          `/auth/otp-verification?email=${encodeURIComponent(email)}&context=reset`
+        );
+      } else {
+        toast.error(apiMessage);
+        triggerShake();
+      }
+    } catch (error) {
+      console.error("Forgot Password error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+      triggerShake();
+    }
+  };
+
+  return (
+    <AuthLayout header={<HeaderLogo />} footer={<AuthFooterNote />} right={<RightImage />}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        className={`${inter.className} ${shake ? "shake" : ""}`}
+        sx={{
+          width: "100%",
+          maxWidth: 420,
+          display: "flex",
+          flexDirection: "column",
+          gap: { xs: 1, md: 2 },
+          py: { xs: 0, md: 2 },
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <Box textAlign="center">
+          <Typography
+            fontWeight={700}
+            fontSize={{ xs: "clamp(16px,1.8vw,20px)", lg: "20px" }}
+            color="#3D3D3D"
+          >
+            Forgot Password
+          </Typography>
+          <Typography fontSize="clamp(11px,1.3vw,16px)" color="#6b7280" sx={{ mt: 1 }}>
+            Enter your email so we can send instructions to reset your password.
+          </Typography>
+        </Box>
+
+        <TextField
+          name="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onBlur={handleBlur}
+          label="Email"
+          placeholder="Email"
+          fullWidth
+          error={!!errors.email}
+          helperText={errors.email || " "}
+          FormHelperTextProps={{ sx: { minHeight: "20px" } }}
+          InputLabelProps={{
+            shrink: true,
+            sx: {
+              fontSize: "0.95rem",
+              color: "#9ca3af",
+              "&.Mui-focused": { color: "#9ca3af" },
+              transform: "translate(14px, 16px) scale(1)",
+              "&.MuiInputLabel-shrink": {
+                transform: "translate(14px, -8px) scale(0.85)",
+                backgroundColor: "#fff",
+                px: 0.5,
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start" sx={{ pr: 1 }}>
+                <Email fontSize="small" style={{ opacity: 0.7 }} />
+                <Box sx={{ height: 28, width: "1px", bgcolor: "#b0b0b0", ml: 1 }} />
+              </InputAdornment>
+            ),
+            sx: {
+              borderRadius: "12px",
+              backgroundColor: "#fff",
+              "& fieldset": { borderColor: "#a8a8a8" },
+              "&:hover fieldset": { borderColor: "#808080" },
+              "&.Mui-focused fieldset": { borderColor: "#4285F4" },
+              fontSize: "1rem",
+              py: 0.5,
+            },
+          }}
+          variant="outlined"
+        />
+
+        <AuthButton
+          text="Continue"
+          loadingText="Sending..."
+          loading={loading}
+          disabled={loading}
+          fullWidth
+        />
+      </Box>
+
+      {/* Shake Animation (unchanged) */}
+      <style jsx global>{`
+        .shake {
+          animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+          0% { transform: translateX(0px); }
+          25% { transform: translateX(-4px); }
+          50% { transform: translateX(4px); }
+          75% { transform: translateX(-4px); }
+          100% { transform: translateX(0px); }
+        }
+      `}</style>
+    </AuthLayout>
+  );
+};
+
+export default ForgotPasswordPage;

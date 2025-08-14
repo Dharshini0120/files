@@ -1,0 +1,378 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@apollo/client";
+import { useDispatch } from "react-redux";
+import {
+  VERIFY_OTP_MUTATION,              // (kept import to avoid changing your file structure)
+  RESEND_OTP_MUTATION,              // user: resendOtp
+  VERIFY_SIGN_OTP_MUTATION,         // user: verifyOtpForSignIn
+  ADMIN_VERIFY_SIGNIN_OTP_MUTATION, // admin: adminverifyOtpForSignIn
+  ADMIN_RESEND_OTP_MUTATION,        // admin: adminresendOtp
+} from "../../../graphql/mutations/auth";
+import {
+  VerifyOtpInput,
+  ResendOtpInput,
+} from "../../../../../shared-types/src/auth/auth.types";
+import {
+  Box,
+  Typography,
+  TextField,
+  CircularProgress,
+} from "@mui/material";
+import { Inter } from "next/font/google";
+import { toast } from "react-toastify";
+
+
+// Shared UI
+import AuthLayout from "../_shared/AuthLayout";
+import HeaderLogo from "../_shared/HeaderLogo";
+import AuthButton from "../_shared/AuthButton";
+import AuthFooterNote from "../_shared/AuthFooterNote";
+import RightImage from "../_shared/RightImage";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+
+// Use props like the Sign In page
+interface OTPPageProps {
+  type?: "user" | "admin";
+}
+
+const OTPPage: React.FC<OTPPageProps> = ({ type }) => {
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
+  const [timer, setTimer] = useState(90);
+  const [isResendEnabled, setIsResendEnabled] = useState(false);
+  const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  const urlParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+
+  const emailParams = urlParams.get("email");
+  const flowParams = urlParams.get("flow") || "signup";
+
+  // USER verify mutation
+  const [verifyUserOtp, { loading: userVerifyLoading }] = useMutation(VERIFY_SIGN_OTP_MUTATION);
+  // ADMIN verify mutation
+  const [verifyAdminOtp, { loading: adminVerifyLoading }] = useMutation(ADMIN_VERIFY_SIGNIN_OTP_MUTATION);
+
+  // USER resend mutation
+  const [resendUserOtp, { loading: resendUserLoading }] = useMutation(RESEND_OTP_MUTATION);
+  // ADMIN resend mutation
+  const [resendAdminOtp, { loading: resendAdminLoading }] = useMutation(ADMIN_RESEND_OTP_MUTATION);
+
+  const loadingVerify = userVerifyLoading || adminVerifyLoading;
+  const resendLoading = resendUserLoading || resendAdminLoading;
+
+  // Primary: from props; Fallback: runtime host/path (keeps old behavior intact)
+  const isAdminFromProp =
+    type === "admin"
+  const runtimeAdmin =
+    typeof window !== "undefined" &&
+    (window.location.pathname.includes("/admin") || window.location.hostname.includes("admin"));
+  const isAdminPortal = Boolean(isAdminFromProp || runtimeAdmin);
+
+  const isUserFromProp =
+    type === "user" 
+  const isUserPortal = Boolean(isUserFromProp || !isAdminPortal);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      return () => clearInterval(interval);
+    } else {
+      setIsResendEnabled(true);
+    }
+  }, [timer]);
+
+  const handleChange = (value: string, index: number) => {
+    if (/^[0-9]?$/.test(value)) {
+      const next = [...otp];
+      next[index] = value;
+      setOtp(next);
+      setError("");
+      if (value && index < 5) {
+        document.getElementById(`otp-${index + 1}`)?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasteData = e.clipboardData.getData("Text").slice(0, 6);
+    if (/^\d+$/.test(pasteData)) {
+      const next = pasteData.split("").concat(Array(6 - pasteData.length).fill(""));
+      setOtp(next);
+      setError("");
+    }
+    e.preventDefault();
+  };
+
+  const handleResend = async () => {
+    try {
+      if (!emailParams) {
+        toast.error("Email not found. Please try signing up again.");
+        router.push("/auth/signup");
+        return;
+      }
+      const input: ResendOtpInput = { email: emailParams };
+
+      let result: any | undefined;
+      if (isAdminPortal) {
+        // ADMIN → adminresendOtp
+        const response = await resendAdminOtp({ variables: { input } });
+        result = response?.data?.adminresendOtp;
+      } else {
+        // USER → resendOtp
+        const response = await resendUserOtp({ variables: { input } });
+        result = response?.data?.resendOtp;
+      }
+
+      if (result?.status === "success") {
+        setOtp(Array(6).fill(""));
+        setTimer(90);
+        setIsResendEnabled(false);
+        setError("");
+        toast.success(result.message || "OTP has been resent successfully!");
+      } else {
+        toast.error(result?.message || "Failed to resend OTP. Please try again.");
+      }
+    } catch (err) {
+      console.error("Resend OTP error:", err);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const otpCode = otp.join("");
+    if (otpCode.length !== 6) return;
+    setError("");
+
+    try {
+      if (!emailParams) {
+        toast.error("Email not found. Please try again.");
+        router.push("/auth/signup");
+        return;
+      }
+
+      const input: VerifyOtpInput = { email: emailParams, otpCode };
+
+      // Choose API based on portal — no functionality changes elsewhere
+      let result: any | undefined;
+
+      if (isAdminPortal) {
+        const response = await verifyAdminOtp({ variables: { input } });
+        result = response?.data?.adminverifyOtpForSignIn;
+      } else {
+        const response = await verifyUserOtp({ variables: { input } });
+        result = response?.data?.verifyOtpForSignIn;
+      }
+
+      if (result?.status === "error" || result?.error) {
+        toast.error(result?.message || "Invalid OTP. Please try again.");
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+        return;
+      }
+
+      if (result?.status === "success") {
+        toast.success(result?.message || "OTP verified successfully!");
+
+        if (flowParams === "signin") {
+          setRedirecting(true);
+          try {
+            const token = result.data?.token;
+            const userInfo = result.data?.user;
+
+            if (token && userInfo) {
+              const portalType = isAdminPortal ? "admin" : "user";
+              const user = { ...userInfo, role: portalType };
+              dispatch({ type: "auth/setCredentials", payload: { token, user } });
+            }
+
+            router.push("/dashboard");
+          } catch (err) {
+            console.error("Error storing credentials:", err);
+            router.push("/dashboard");
+          }
+        } else if (flowParams === "signup") {
+          router.push(
+            `/auth/create-password?email=${encodeURIComponent(emailParams)}&flow=${flowParams}`
+          );
+        }
+      } else {
+        toast.error(result?.message || "Verification failed. Please try again.");
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+      }
+    } catch (err) {
+      console.error("OTP Verification error:", err);
+      toast.error("An unexpected error occurred. Please try again.");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    }
+  };
+
+  const isOtpComplete = otp.join("").length === 6;
+
+  return (
+    <AuthLayout
+      header={<HeaderLogo />}
+      footer={<AuthFooterNote />}
+      right={<RightImage />}
+    >
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        className={inter.className}
+        sx={{
+          width: "100%",
+          maxWidth: 420, // match Sign In width
+          display: "flex",
+          flexDirection: "column",
+          gap: { xs: 1, md: 2 },
+          py: { xs: 0, md: 2 },
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {/* Title */}
+        <Box textAlign="center">
+          <Typography
+            fontWeight={700}
+            fontSize={{ xs: "clamp(16px,1.8vw,20px)", lg: "20px" }}
+            color="#3D3D3D"
+          >
+            OTP Verification
+          </Typography>
+          <Typography fontSize="clamp(11px,1.3vw,16px)" color="#6b7280">
+            Please enter the 6 digit code to continue
+          </Typography>
+        </Box>
+
+        {/* OTP Inputs */}
+        <Box
+          display="flex"
+          justifyContent="center"
+          gap={1.5}
+          className={shake ? "shake" : ""}
+          mb={1}
+        >
+          {otp.map((digit, idx) => (
+            <TextField
+              key={idx}
+              id={`otp-${idx}`}
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, idx)}
+              onKeyDown={(e: any) => handleKeyDown(e, idx)}
+              onPaste={idx === 0 ? handlePaste : undefined}
+              inputProps={{
+                maxLength: 1,
+                style: {
+                  textAlign: "center",
+                  fontSize: "1.5rem",
+                  fontWeight: 600,
+                  padding: "12px",
+                  width: "48px",
+                },
+                disabled: loadingVerify, // unchanged behavior; now respects admin/user
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  "& fieldset": { borderColor: "#a8a8a8" },
+                  "&:hover fieldset": { borderColor: "#808080" },
+                  "&.Mui-focused fieldset": { borderColor: "#4285F4" },
+                },
+              }}
+            />
+          ))}
+        </Box>
+
+        {error && (
+          <Typography color="error" textAlign="center" fontSize="0.9rem">
+            {error}
+          </Typography>
+        )}
+
+        {/* Continue button (shared) */}
+        <AuthButton
+          text="Continue"
+          loadingText={redirecting ? "Redirecting..." : "Verifying..."}
+          loading={loadingVerify || redirecting}
+          disabled={!isOtpComplete || loadingVerify || redirecting}
+          fullWidth
+        />
+
+        {/* Resend OTP */}
+        <Typography
+          textAlign="center"
+          color="#6b7280"
+          mt={1}
+          fontSize="clamp(11px,1.3vw,16px)"
+        >
+          Didn’t receive the code?{" "}
+          {isResendEnabled ? (
+            <Typography
+              component="span"
+              sx={{
+                color: resendLoading ? "#ccc" : "#4285F4",
+                fontWeight: 500,
+                cursor: resendLoading ? "not-allowed" : "pointer",
+              }}
+              onClick={resendLoading ? undefined : handleResend}
+            >
+              {resendLoading ? (
+                <>
+                  Resending...
+                  <CircularProgress size={12} sx={{ ml: 0.5 }} />
+                </>
+              ) : (
+                "Resend"
+              )}
+            </Typography>
+          ) : (
+            <span>
+              Resend in{" "}
+              <span style={{ color: "#4285F4", fontWeight: 500 }}>
+                {`${Math.floor(timer / 60)
+                  .toString()
+                  .padStart(2, "0")}:${(timer % 60).toString().padStart(2, "0")}`}
+              </span>
+            </span>
+          )}
+        </Typography>
+      </Box>
+
+      {/* Shake animation (same as your original) */}
+      <style jsx global>{`
+        .shake {
+          animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+          0% { transform: translateX(0px); }
+          25% { transform: translateX(-4px); }
+          50% { transform: translateX(4px); }
+          75% { transform: translateX(-4px); }
+          100% { transform: translateX(0px); }
+        }
+      `}</style>
+    </AuthLayout>
+  );
+};
+
+export default OTPPage;

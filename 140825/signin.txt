@@ -1,0 +1,430 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Typography,
+  IconButton,
+  InputAdornment,
+  Button,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import EmailIcon from "@mui/icons-material/Email";
+import Lock from "@mui/icons-material/Lock";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { toast } from "react-toastify";
+import { useMutation } from "@apollo/client";
+import { useDispatch } from "react-redux";
+
+
+// GraphQL
+import { SIGNIN_MUTATION } from "../../../graphql/mutations/auth";
+import { ADMIN_SIGNIN_MUTATION } from "../../../graphql/mutations/auth";
+
+// Shared UI
+import AuthLayout from "../_shared/AuthLayout";
+import HeaderLogo from "../_shared/HeaderLogo";
+import AuthButton from "../_shared/AuthButton";
+import AuthFooterNote from "../_shared/AuthFooterNote";
+import RightImage from "../_shared/RightImage";
+
+interface FormState {
+  email: string;
+  password: string;
+}
+interface FormErrors {
+  email: string;
+  password: string;
+}
+interface SharedSignInProps {
+  type ?:  "user" | "admin"; // allow enum or string
+}
+
+const SharedSignIn = (props: SharedSignInProps) => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  const [tab, setTab] = useState(0);
+  const [showPassword, setShowPassword] = useState(true);
+  const [form, setForm] = useState<FormState>({ email: "", password: "" });
+  const [errors, setErrors] = useState<FormErrors>({ email: "", password: "" });
+
+  // Prepare both mutations; we'll choose at runtime
+  const [userSignIn, { loading: userLoading }] = useMutation(SIGNIN_MUTATION);
+  const [adminSignIn, { loading: adminLoading }] = useMutation(ADMIN_SIGNIN_MUTATION);
+
+  const loading = userLoading || adminLoading;
+
+  const isUserPortal =
+    props.type === "user";
+
+  const isAdminPortal =
+    props.type === "admin";
+  const validateEmail = (email: string): string => {
+    if (!email) return "Email is required";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Please enter a valid email address";
+    return "";
+  };
+  const validatePassword = (password: string): string => {
+    if (!password) return "Password is required";
+    if (password.length < 6) return "Password must be at least 6 characters";
+    return "";
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let fieldError = "";
+    if (name === "email") fieldError = validateEmail(value);
+    if (name === "password") fieldError = validatePassword(value);
+    setErrors((prev) => ({ ...prev, [name]: fieldError }));
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const validateForm = (): boolean => {
+    const emailError = validateEmail(form.email);
+    const passwordError = validatePassword(form.password);
+    setErrors({ email: emailError, password: passwordError });
+    return !emailError && !passwordError;
+  };
+
+  const handleContinue = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!validateForm()) return;
+
+    try {
+      // Choose mutation based on portal type
+      if (isAdminPortal) {
+        // ADMIN PORTAL → call adminSignIn
+        const res = await adminSignIn({
+          variables: { input: { emailOrPhone: form.email, password: form.password } },
+        });
+
+        const result = res.data?.adminSignIn;
+        if (!result) {
+          toast.error("No response from server. Please try again.");
+          return;
+        }
+        if (result.status !== "success") {
+          toast.error(result.message || "Sign in failed. Please check your credentials.");
+          return;
+        }
+
+        toast.success(result.message || "OTP sent. Please verify.");
+
+        const emailForOtp = (result.data && (result.data.email as string)) || form.email;
+        router.push(`/auth/otp-verification?flow=signin&email=${encodeURIComponent(emailForOtp)}`);
+        return;
+      }
+
+      // USER PORTAL → call user signIn
+      const res = await userSignIn({
+        variables: { input: { emailOrPhone: form.email, password: form.password } },
+      });
+
+      const result = res.data?.signIn;
+      if (!result) {
+        toast.error("No response from server. Please try again.");
+        return;
+      }
+      if (result.status !== "success") {
+        toast.error(result.message || "Sign in failed. Please check your credentials.");
+        return;
+      }
+
+      toast.success(result.message);
+
+      // Some backends issue token immediately; some require OTP first.
+      const token = result.data?.token || null;
+      if (token) {
+        const user = {
+          id: result.data?.user?.id || "1",
+          fullName: result.data?.user?.fullName || "User",
+          email: form.email,
+          role: isAdminPortal ? "admin" : "user",
+        };
+        dispatch({ type: "auth/setCredentials", payload: { token, user } });
+      }
+
+      router.push(`/auth/otp-verification?flow=signin&email=${encodeURIComponent(form.email)}`);
+    } catch (err: any) {
+      console.error("Login failed", err);
+      const gqlMessage =
+        err?.graphQLErrors?.[0]?.message ||
+        err?.message ||
+        "An unexpected error occurred. Please try again.";
+      toast.error(gqlMessage);
+    }
+  };
+
+  return (
+    <AuthLayout header={<HeaderLogo />} footer={<AuthFooterNote />} right={<RightImage />}>
+      <Box
+        component="form"
+        onSubmit={handleContinue}
+        sx={{
+          width: "100%",
+          maxWidth: 420,
+          display: "flex",
+          flexDirection: "column",
+          gap: { xs: 1, md: 2 },
+          py: { xs: 0, md: 2 },
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {/* Title */}
+        <Box textAlign="center">
+          <Typography
+            fontWeight={700}
+            fontSize={{ xs: "clamp(16px,1.8vw,20px)", lg: "20px" }}
+            color="#3D3D3D"
+          >
+            Welcome Back
+          </Typography>
+          <Typography fontSize="clamp(11px,1.3vw,16px)" color="#6b7280">
+            Please enter your details to continue
+          </Typography>
+        </Box>
+
+{/* Tabs — show only for User portal (two tabs) */}
+{isUserPortal && (
+  <Box
+    position="relative"
+    display="flex"
+    width="100%"
+    maxWidth="420px"
+    mx="auto"
+    borderRadius={2}
+    bgcolor="#f0eeed"
+    p={{ xs: 0.8, sm: 0.8, lg: 1 }}
+    mb={3}
+  >
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 3,
+        left: 3,
+        width: 'calc(50% - 6px)',
+        height: 'calc(100% - 6px)',
+        borderRadius: 2,
+        bgcolor: '#fff',
+        boxShadow: 1,
+        zIndex: 1,
+        willChange: 'transform',
+        transition: 'transform 120ms cubic-bezier(.2,.9,.4,1)',
+        transform: tab === 0 ? 'translateX(0%)' : 'translateX(100%)',
+      }}
+    />
+    <Button
+      onClick={() => {
+        setTab(0);
+        router.push('/auth/signin');
+      }}
+      sx={{
+        flex: 1,
+        fontWeight: tab === 0 ? 700 : 500,
+        fontSize: '16px',
+        zIndex: 2,
+        color: tab === 0 ? '#000' : '#9ca3af',
+        textTransform: 'none',
+        minHeight: 40,
+      }}
+    >
+      Sign In
+    </Button>
+    <Button
+      onClick={() => {
+        setTab(1);
+        router.push('/auth/signup');
+      }}
+      sx={{
+        flex: 1,
+        fontWeight: tab === 1 ? 700 : 500,
+        fontSize: '16px',
+        zIndex: 2,
+        color: tab === 1 ? '#000' : '#9ca3af',
+        textTransform: 'none',
+        minHeight: 40,
+      }}
+    >
+      Sign Up
+    </Button>
+  </Box>
+)}
+
+{/* Tabs — show only for Admin portal (single tab) */}
+{isAdminPortal && (
+  <Box
+    position="relative"
+    display="flex"
+    width="100%"
+    maxWidth="420px"
+    mx="auto"
+    borderRadius={2}
+    bgcolor="#f0eeed"
+    p={{ xs: 0.8, sm: 0.8, lg: 1 }}
+    mb={3}
+  >
+    <Box
+      position="absolute"
+      top={3}
+      left={3}
+      width="calc(100% - 6px)"
+      height="calc(100% - 6px)"
+      borderRadius={2}
+      bgcolor="#fff"
+      boxShadow={1}
+      zIndex={1}
+    />
+    <Button
+      onClick={() => router.push('/auth/signin')}
+      sx={{
+        flex: 1,
+        fontWeight: 700,
+        fontSize: '16px',
+        zIndex: 2,
+        color: '#000',
+        textTransform: 'none',
+        minHeight: 40,
+      }}
+    >
+      Sign In
+    </Button>
+  </Box>
+)}
+
+        {/* Email */}
+        <TextField
+          name="email"
+          value={form.email}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          label="Email"
+          placeholder="Email"
+          fullWidth
+          error={!!errors.email}
+          helperText={errors.email || " "}
+          FormHelperTextProps={{ sx: { minHeight: "20px" } }}
+          InputLabelProps={{
+            shrink: true,
+            sx: {
+              fontSize: "0.95rem",
+              color: "#9ca3af",
+              "&.Mui-focused": { color: "#9ca3af" },
+              transform: "translate(14px, 16px) scale(1)",
+              "&.MuiInputLabel-shrink": {
+                transform: "translate(14px, -8px) scale(0.85)",
+                backgroundColor: "#fff",
+                px: 0.5,
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start" sx={{ pr: 1 }}>
+                <EmailIcon fontSize="small" style={{ opacity: 0.7 }} />
+                <Box sx={{ height: 28, width: "1px", bgcolor: "#b0b0b0", ml: 1 }} />
+              </InputAdornment>
+            ),
+            sx: {
+              borderRadius: "12px",
+              backgroundColor: "#fff",
+              "& fieldset": { borderColor: "#a8a8a8" },
+              "&:hover fieldset": { borderColor: "#808080" },
+              "&.Mui-focused fieldset": { borderColor: "#4285F4" },
+              fontSize: "1rem",
+              py: 0.5,
+            },
+          }}
+          variant="outlined"
+        />
+
+        {/* Password */}
+        <TextField
+          name="password"
+          value={form.password}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          label="Password"
+          placeholder="Password"
+          type={showPassword ? "password" : "text"}
+          fullWidth
+          error={!!errors.password}
+          helperText={errors.password || " "}
+          FormHelperTextProps={{ sx: { minHeight: "20px" } }}
+          InputLabelProps={{
+            shrink: true,
+            sx: {
+              fontSize: "0.95rem",
+              color: "#9ca3af",
+              "&.Mui-focused": { color: "#9ca3af" },
+              transform: "translate(14px, 16px) scale(1)",
+              "&.MuiInputLabel-shrink": {
+                transform: "translate(14px, -8px) scale(0.85)",
+                backgroundColor: "#fff",
+                px: 0.5,
+              },
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start" sx={{ pr: 1 }}>
+                <Lock fontSize="small" style={{ opacity: 0.7 }} />
+                <Box sx={{ height: 28, width: "1px", bgcolor: "#b0b0b0", ml: 1 }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword((v) => !v)} edge="end">
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+            sx: {
+              borderRadius: "12px",
+              backgroundColor: "#fff",
+              "& fieldset": { borderColor: "#a8a8a8" },
+              "&:hover fieldset": { borderColor: "#808080" },
+              "&.Mui-focused fieldset": { borderColor: "#4285F4" },
+              fontSize: "1rem",
+              py: 0.5,
+            },
+          }}
+          variant="outlined"
+        />
+
+        {/* Submit */}
+        <AuthButton
+          text="Continue"
+          loadingText="Signing in..."
+          loading={loading}
+          disabled={loading}
+          fullWidth
+        />
+
+        {/* Forgot Password */}
+        <Typography
+          sx={{
+            color: "#6b7280",
+            textDecoration: "underline",
+            cursor: "pointer",
+            textAlign: "center",
+            fontSize: "clamp(11px,1.3vw,16px)",
+          }}
+          onClick={() => router.push("/auth/forgot-password")}
+        >
+          Forgot Password?
+        </Typography>
+      </Box>
+    </AuthLayout>
+  );
+};
+
+export default SharedSignIn;
