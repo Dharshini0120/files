@@ -1,0 +1,3160 @@
+{
+  "id": "1755178644364",
+  "name": "Ambulatory Surgical Center",
+  "description": "",
+  "nodes": [
+    {
+      "id": "10",
+      "type": "questionNode",
+      "position": {
+        "x": 509.4928725319146,
+        "y": -1011.2895180329367
+      },
+      "data": {
+        "question": "Do you have a paper Health Record? \n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 317,
+      "height": 175,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 509.4928725319146,
+        "y": -1011.2895180329367
+      },
+      "dragging": false
+    },
+    {
+      "id": "14",
+      "type": "questionNode",
+      "position": {
+        "x": 719.594553051796,
+        "y": -363.2389609797747
+      },
+      "data": {
+        "question": "Based on data validation, were there two or more CMS reported elements incorrectly reported or not reported?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 217,
+      "selected": false,
+      "dragging": false,
+      "positionAbsolute": {
+        "x": 719.594553051796,
+        "y": -363.2389609797747
+      }
+    },
+    {
+      "id": "15",
+      "type": "questionNode",
+      "position": {
+        "x": 461.2372970816257,
+        "y": 221.51775795203508
+      },
+      "data": {
+        "question": "How is Infection Prevention education provided to new and current employees, Physicians, Advanced Practice Providers, Residents, and contracted personnel in your organization?\n",
+        "questionType": "radio",
+        "options": [
+          "In-person by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control. ",
+          "Computer (virtual) based learning developed by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control.",
+          "Computer (virtual) based learning and/or written materials derived from a source that is not well versed in Infection Prevention/Control, or may be out-of-date, or may not be supported by current evidence."
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 573,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 461.2372970816257,
+        "y": 221.51775795203508
+      },
+      "dragging": false
+    },
+    {
+      "id": "16",
+      "type": "questionNode",
+      "position": {
+        "x": 487.9756211840903,
+        "y": 980.4074514570354
+      },
+      "data": {
+        "question": "How would you rate the effectiveness of your Infection Prevention Program?\n",
+        "questionType": "radio",
+        "options": [
+          "\"Highly effective: 1. Oversight of the entire healthcare organization. 2. Supported by Executive Leadership. 3. Provided the necessary resources to function at the highest level possible (e.g., access to laboratory results, integrated electronic health record with IP program specific module). 4. Electronic algorithms that help identify healthcare associated infections, and reportable infectious diseases/conditions. 5. Electronic case reporting capacity. 6. Mechanisms to perform root cause analysis of HAI and outbreak events. 7. Ability to monitor process measures (e.g., hand hygiene compliance, central line/indwelling catheter management, etc.). 8. IP program oversight by a medical provider with training in hospital epidemiology.  9. Clear, readily accessible policies/procedures regarding infection prevention. 10. Access to evidence-based literature and regulatory information to support the IP program.  11. Well attended IP Committee with representation of a diverse group of physician practices (e.g., critical care, surgery, pediatrics, OB, hospitalist, etc.).\"",
+          "\"Moderately effective: Has 7 to 8 of the criteria described in highly effective IP program. \"",
+          "\"Neutral: Has 6 to 7 of the criteria described in highly effective IP program.\"",
+          "\"Moderately ineffective: Has 4 to 5 of the criteria described in highly effective IP program\"",
+          "\"Highly ineffective: Has 3 or less of the criteria described in highly effective IP program\""
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 826,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 487.9756211840903,
+        "y": 980.4074514570354
+      },
+      "dragging": false
+    },
+    {
+      "id": "18",
+      "type": "questionNode",
+      "position": {
+        "x": 545.5098407411755,
+        "y": -2744.766190999452
+      },
+      "data": {
+        "question": "How is your Infection Prevention Program managed?\n",
+        "questionType": "radio",
+        "options": [
+          "Onsite",
+          "Offsite (remote) or Corporate",
+          "In policy alone",
+          "Do not have one"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 239,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 545.5098407411755,
+        "y": -2744.766190999452
+      },
+      "dragging": false
+    },
+    {
+      "id": "19",
+      "type": "questionNode",
+      "position": {
+        "x": 951.8492053738626,
+        "y": -2403.5987528318065
+      },
+      "data": {
+        "question": "Does your organization have a dedicated Hospital Epidemiologist with appropriate training?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 217,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 951.8492053738626,
+        "y": -2403.5987528318065
+      },
+      "dragging": false
+    },
+    {
+      "id": "20",
+      "type": "questionNode",
+      "position": {
+        "x": 510.39568105647106,
+        "y": -2002.408507988312
+      },
+      "data": {
+        "question": "Does your organization employ Infection Preventionists?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 196,
+      "selected": true,
+      "positionAbsolute": {
+        "x": 510.39568105647106,
+        "y": -2002.408507988312
+      },
+      "dragging": false
+    },
+    {
+      "id": "21",
+      "type": "questionNode",
+      "position": {
+        "x": 774.8943933361882,
+        "y": -1406.4950438960036
+      },
+      "data": {
+        "question": "Does your organization have an electronic health record (E.H.R)?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 196,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 774.8943933361882,
+        "y": -1406.4950438960036
+      },
+      "dragging": false
+    },
+    {
+      "id": "22",
+      "type": "questionNode",
+      "position": {
+        "x": 1223.9566087805026,
+        "y": -1419.338878201922
+      },
+      "data": {
+        "question": "Does your Infection Prevention Surveillance System integrate with your Electronic Health Record (E.H.R)?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not sure"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 239,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1223.9566087805026,
+        "y": -1419.338878201922
+      },
+      "dragging": false
+    },
+    {
+      "id": "23",
+      "type": "questionNode",
+      "position": {
+        "x": 861.8815631994642,
+        "y": -1143.9020976736142
+      },
+      "data": {
+        "question": "Do you have a paper Health Record? \n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 317,
+      "height": 175,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 861.8815631994642,
+        "y": -1143.9020976736142
+      },
+      "dragging": false
+    },
+    {
+      "id": "24",
+      "type": "questionNode",
+      "position": {
+        "x": 1444.9825977589755,
+        "y": -1040.4812302602732
+      },
+      "data": {
+        "question": "Does your organization have data mining capabilities for infection prevention?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 217,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1444.9825977589755,
+        "y": -1040.4812302602732
+      },
+      "dragging": false
+    },
+    {
+      "id": "25",
+      "type": "questionNode",
+      "position": {
+        "x": 832.0013808382938,
+        "y": -771.441684744657
+      },
+      "data": {
+        "question": "Does your organization receive support from executive leadership for the Infection Prevention Program?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 217,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 832.0013808382938,
+        "y": -771.441684744657
+      },
+      "dragging": false
+    },
+    {
+      "id": "26",
+      "type": "questionNode",
+      "position": {
+        "x": 1262.5031249917397,
+        "y": -742.153239969735
+      },
+      "data": {
+        "question": "Has a recent data validation been performed by a State or Federal agency indicating full compliance with required CMS reporting elements using the NHSN?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, and we were in full compliance",
+          "Yes, but we were not in full compliance",
+          "No, we have not had a recent data validation for CMS reported elements submitted via NHSN."
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 319,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1262.5031249917397,
+        "y": -742.153239969735
+      },
+      "dragging": false
+    },
+    {
+      "id": "27",
+      "type": "questionNode",
+      "position": {
+        "x": 1149.0506309460366,
+        "y": -364.65595250962735
+      },
+      "data": {
+        "question": "Based on data validation, were there two or more CMS reported elements incorrectly reported or not reported?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 217,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1149.0506309460366,
+        "y": -364.65595250962735
+      },
+      "dragging": false
+    },
+    {
+      "id": "28",
+      "type": "questionNode",
+      "position": {
+        "x": 1543.9613968233389,
+        "y": -277.74101751215704
+      },
+      "data": {
+        "question": "How is Infection Prevention education provided to new and current employees, Physicians, Advanced Practice Providers, Residents, and contracted personnel in your organization?\n",
+        "questionType": "radio",
+        "options": [
+          "In-person by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control. ",
+          "Computer (virtual) based learning developed by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control.",
+          "Computer (virtual) based learning and/or written materials derived from a source that is not well versed in Infection Prevention/Control, or may be out-of-date, or may not be supported by current evidence."
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 573,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1543.9613968233389,
+        "y": -277.74101751215704
+      },
+      "dragging": false
+    },
+    {
+      "id": "29",
+      "type": "questionNode",
+      "position": {
+        "x": 1133.258086392101,
+        "y": -44.32004917530042
+      },
+      "data": {
+        "question": "How would you rate the effectiveness of your Infection Prevention Program?\n",
+        "questionType": "radio",
+        "options": [
+          "\"Highly effective: 1. Oversight of the entire healthcare organization. 2. Supported by Executive Leadership. 3. Provided the necessary resources to function at the highest level possible (e.g., access to laboratory results, integrated electronic health record with IP program specific module). 4. Electronic algorithms that help identify healthcare associated infections, and reportable infectious diseases/conditions. 5. Electronic case reporting capacity. 6. Mechanisms to perform root cause analysis of HAI and outbreak events. 7. Ability to monitor process measures (e.g., hand hygiene compliance, central line/indwelling catheter management, etc.). 8. IP program oversight by a medical provider with training in hospital epidemiology.  9. Clear, readily accessible policies/procedures regarding infection prevention. 10. Access to evidence-based literature and regulatory information to support the IP program.  11. Well attended IP Committee with representation of a diverse group of physician practices (e.g., critical care, surgery, pediatrics, OB, hospitalist, etc.).\"",
+          "\"Moderately effective: Has 7 to 8 of the criteria described in highly effective IP program. \"",
+          "\"Neutral: Has 6 to 7 of the criteria described in highly effective IP program.\"",
+          "\"Moderately ineffective: Has 4 to 5 of the criteria described in highly effective IP program\"",
+          "\"Highly ineffective: Has 3 or less of the criteria described in highly effective IP program\""
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 826,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1133.258086392101,
+        "y": -44.32004917530042
+      },
+      "dragging": false
+    },
+    {
+      "id": "30",
+      "type": "questionNode",
+      "position": {
+        "x": 1329.3225974535458,
+        "y": 780.6405721601056
+      },
+      "data": {
+        "question": "How would you rate the level of experience and knowledge of the Infection Preventionist(s) within your healthcare organization?\n",
+        "questionType": "radio",
+        "options": [
+          "\"Advanced:  Transcripts/degree(s) representative of a post-graduate education (e.g., Masters, Doctorate) within Nursing, Microbiology, Medicine, Public Health, Administration, etc.). Certification Board in Infection Control (CBIC) certification (e.g., CIC, LT-CIP, AL-CIP, FAPIC). Additional certifications representing skills in quality/patient safety (e.g., project management, six-sigma black belt, Certified Professional in Healthcare Quality, etc.).  (https://www.cbic.org/CBIC/PDFs/2024-Candidate-Handbook_September-2024.pdf) and passes the CIC or LTC-CIP exam.\"",
+          "\"Proficient: Transcripts/degree(s) representative of graduate or post-secondary education in a health-related field, medicine, nursing, laboratory, public health, or biology. A diploma RN, and LPN/LVN, DPN, and a health-related Associate's degree, Bachelor's, Master's, or Doctorate. Who meets the eligibility requirements for Certification in Infection Control or Long-term Care Certification in Infection Control  (https://www.cbic.org/CBIC/PDFs/2024-Candidate-Handbook_September-2024.pdf) and passes the CIC or LTC-CIP exam.\"",
+          "\"Novice: New to the role of infection prevention, or an interest in working within infection prevention. Evidence of a-IPC or Associate Infection Prevention Control certification. \""
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 825,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1329.3225974535458,
+        "y": 780.6405721601056
+      },
+      "dragging": false
+    },
+    {
+      "id": "31",
+      "type": "questionNode",
+      "position": {
+        "x": 1729.041654804685,
+        "y": 1040.4817950976558
+      },
+      "data": {
+        "question": "Does your organization regularly monitor hand hygiene performance either using the WHO 5 Moments for Hand Hygiene or CDC Guidelines for Hand Hygiene 1A Recommendations as a guide to evaluate performance and provide feedback for non-compliance?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 322,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1729.041654804685,
+        "y": 1040.4817950976558
+      },
+      "dragging": false
+    },
+    {
+      "id": "32",
+      "type": "questionNode",
+      "position": {
+        "x": 1737.1597616758472,
+        "y": 1448.303864801486
+      },
+      "data": {
+        "question": "Is hand hygiene performance is monitored upon entry and exit of patient care rooms, and practice follows the  World Health Organization 5 Moments for Hand Hygiene (Before and After Touching the Patient and the Patient's Surroundings, Before and After a Procedure, After Exposure to Blood/Body Fluid) OR CDC Guidelines for Hand Hygiene 1A recommendations. Hand hygiene is audited in each acute care nursing unit (excluding procedural locations) with a cross-section of healthcare personnel providing services in the unit/department during days, evenings, and weekends. \n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 509,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1737.1597616758472,
+        "y": 1448.303864801486
+      },
+      "dragging": false
+    },
+    {
+      "id": "33",
+      "type": "questionNode",
+      "position": {
+        "x": 1232.8921250985454,
+        "y": 1693.7694679187582
+      },
+      "data": {
+        "question": "Is hand hygiene performance is monitored upon entry and exit of patient care rooms, and practice follows the  World Health Organization 5 Moments for Hand Hygiene (Before and After Touching the Patient and the Patient's Surroundings, Before and After a Procedure, After Exposure to Blood/Body Fluid)  OR CDC Guidelines for Hand Hygiene 1A recommendations. Hand hygiene is audited in (a subsection of acute care nursing units and not throughout all acute care nursing units - excluding procedural locations) with a cross-section of healthcare personnel providing services in the unit/department during days, evenings, and weekends.\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 551,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1232.8921250985454,
+        "y": 1693.7694679187582
+      },
+      "dragging": false
+    },
+    {
+      "id": "34",
+      "type": "questionNode",
+      "position": {
+        "x": 1706.5660636233538,
+        "y": 2024.1038422192914
+      },
+      "data": {
+        "question": "Is hand hygiene performance is monitored upon entry and exit of patient care rooms, and practice follows the  World Health Organization 5 Moments for Hand Hygiene (Before and After Touching the Patient and the Patient's Surroundings, Before and After a Procedure, After Exposure to Blood/Body Fluid) OR CDC Guidelines for Hand Hygiene 1A recommendations. Hand hygiene is audited in (a subsection of acute care nursing units and not throughout all acute care nursing units - excluding procedural locations) reflecting a cross-section of healthcare personnel providing services in the unit/department during business hours only. \n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 551,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1706.5660636233538,
+        "y": 2024.1038422192914
+      },
+      "dragging": false
+    },
+    {
+      "id": "35",
+      "type": "questionNode",
+      "position": {
+        "x": 1280.3864812258666,
+        "y": 2319.002315760473
+      },
+      "data": {
+        "question": "Is the volume of monthly hand hygiene observations in your organization appropriate for the volume of admissions to each acute care unit/department, in accordance with Leapfrog Survey criteria? (see below)\n",
+        "questionType": "text-input",
+        "options": [],
+        "isRequired": false
+      },
+      "width": 350,
+      "height": 232,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1280.3864812258666,
+        "y": 2319.002315760473
+      },
+      "dragging": false
+    },
+    {
+      "id": "36",
+      "type": "questionNode",
+      "position": {
+        "x": 1102.917648051967,
+        "y": 2617.938341398228
+      },
+      "data": {
+        "question": "A minimum of 200 hand hygiene opportunities a month are observed in each acute care nursing unit with a cross-section of healthcare personnel providing services in the unit/department during days, evenings, and weekends. \n(Appropriate for patient care units with 13 or higher number of patients based on daily census.) \n(Appropriate for outpatient units, PACU, Labor & Delivery units with 400 or greater procedures per month)\n(Appropriate for Emergency Departments with 2,000 or greater visits per month)\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 488,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1102.917648051967,
+        "y": 2617.938341398228
+      },
+      "dragging": false
+    },
+    {
+      "id": "37",
+      "type": "questionNode",
+      "position": {
+        "x": 1523.8931702205061,
+        "y": 2542.504838580243
+      },
+      "data": {
+        "question": "\"A minimum of 100 hand hygiene opportunities a month is are observed in each acute care nursing unit with a cross-section of healthcare personnel providing services in the unit/department during days, evenings, and weekends.  \n(Appropriate for patient care units with 7-9 patients based on daily census)\n(Appropriate for outpatient care units, PACU, Labor & Delivery units with 240-319 procedures per month)\n(Appropriate for Emergency Departments with 1000-1499 visits per month)\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 467,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1523.8931702205061,
+        "y": 2542.504838580243
+      },
+      "dragging": false
+    },
+    {
+      "id": "39",
+      "type": "questionNode",
+      "position": {
+        "x": 1174.324346327231,
+        "y": 3154.617841815563
+      },
+      "data": {
+        "question": "What is the Employee COVID Vaccination rate reported into the National Healthcare Safety Network (NHSN) for the previous quarter (3-months) for your organization?\n",
+        "questionType": "radio",
+        "options": [
+          "Between 80 and 100%",
+          "Between 50 and 79%",
+          "Between 20 and 49%",
+          "Less than 19%"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 302,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1174.324346327231,
+        "y": 3154.617841815563
+      },
+      "dragging": false
+    },
+    {
+      "id": "40",
+      "type": "questionNode",
+      "position": {
+        "x": 1572.2607666170004,
+        "y": 3169.1460294169588
+      },
+      "data": {
+        "question": "Do all healthcare personnel with patient contact at your facility demonstrate competency in donning and doffing Personal Protective Equipment (PPE)?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, there is documented evidence of competency training for each healthcare employee with patient contact on donning and doffing PPE. Competency training is performed at orientation and as needed when there are changes to PPE products.",
+          "Yes, healthcare personnel receive in-person education on donning and doffing PPE as part of new employee orientation and once annually thereafter. However, documented evidence of competency does not exist.",
+          "Yes, healthcare personnel receive written information on donning and doffing PPE as part of their employment, but there is no in-person training or documented evidence of competency.",
+          "No, healthcare personnel are not instructed on donning and doffing PPE.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 575,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1572.2607666170004,
+        "y": 3169.1460294169588
+      },
+      "dragging": false
+    },
+    {
+      "id": "41",
+      "type": "questionNode",
+      "position": {
+        "x": 1949.5125171613527,
+        "y": 3184.516609997239
+      },
+      "data": {
+        "question": "Does your organization use only approved hand hygiene products (e.g., soap, alcohol-based hand gel/foam, hand lotion) that demonstrate effectiveness and are readily available at points-of-care?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, the organization uses hand hygiene products approved by our Infection Prevention Program and/or Employee/Occupational Health Program. Unapproved products are prohibited. These products are readily available at points of care.",
+          "Yes, our organization uses hand hygiene products approved by leadership, considering cost-effectiveness and customer preferences, and ensures they are readily available.",
+          "Yes, we allow various hand hygiene products based on employees’ preferences",
+          "No, we expect employees to use soap and water for hand hygiene.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 539,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1949.5125171613527,
+        "y": 3184.516609997239
+      },
+      "dragging": false
+    },
+    {
+      "id": "42",
+      "type": "questionNode",
+      "position": {
+        "x": 1175.1515675971984,
+        "y": 3676.0041503463217
+      },
+      "data": {
+        "question": "Does your organization use only approved disinfectant products that demonstrate effectiveness and are familiar with the manufacturer's instructions for use?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, healthcare personnel are familiar with the organization's approved disinfectants with proven effectiveness against different pathogens and understand the manufacturer's instructions for use based on surface compatibility and dwell time.",
+          "Yes, only our housekeeping/environmental services personnel are familiar with the approved disinfectants and understand their manufacturer's instructions.",
+          "Yes, our organization uses disinfectants approved by leadership based on cost-effectiveness and customer preferences.",
+          "No, we allow various disinfectant products based on employees’ preferences.",
+          "No, we expect employees to clean surfaces using soap and water.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 579,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1175.1515675971984,
+        "y": 3676.0041503463217
+      },
+      "dragging": false
+    },
+    {
+      "id": "43",
+      "type": "questionNode",
+      "position": {
+        "x": 1579.4180853969367,
+        "y": 3782.460217498607
+      },
+      "data": {
+        "question": "Does your organization use readily available PPE that has been evaluated and approved by a representative from the Infection Prevention Program or Occupational Health Program with relevant certification or experience?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, the organization uses PPE approved by the Infection Prevention Program and/or Employee Health/Occupational Health Program, with proven effectiveness through regulatory testing criteria. PPE is readily available for employee use.",
+          "No, the organization uses PPE approved by leadership, based on cost-effectiveness and employee preferences, and ensures it is readily available.",
+          "No, we allow employees to purchase or determine their own PPE.",
+          "No, our organization does not provide PPE to employees.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 539,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1579.4180853969367,
+        "y": 3782.460217498607
+      },
+      "dragging": false
+    },
+    {
+      "id": "44",
+      "type": "questionNode",
+      "position": {
+        "x": 2011.333289594633,
+        "y": 3846.9924398875473
+      },
+      "data": {
+        "question": "Does your organization develop infection prevention policies using relevant evidence-based guidance?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, the organization uses evidence-based guidance from notable professional sources or policy templates in developing infection prevention policies.",
+          "No, organizational leadership develops infection prevention policies based on the activities performed in the organization, without reference to evidence-based guidance from professional sources.",
+          "No, our organization does not have infection prevention policies.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 416,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2011.333289594633,
+        "y": 3846.9924398875473
+      },
+      "dragging": false
+    },
+    {
+      "id": "45",
+      "type": "questionNode",
+      "position": {
+        "x": 1121.9657466506703,
+        "y": 4368.937899746399
+      },
+      "data": {
+        "question": "Are your organization's infection prevention policies readily available to employees, and is their understanding evaluated at least once per year?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, employees have electronic access to infection prevention policies, introduced at hire and annually thereafter.",
+          "Yes, employees have hardcopy access to infection prevention policies at a central location, introduced at hire and annually thereafter.",
+          "Yes, employees have hardcopy access to infection prevention policies at a central location, introduced at hire and annually thereafter.",
+          "No, our organization does not have infection prevention policies.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 478,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1121.9657466506703,
+        "y": 4368.937899746399
+      },
+      "dragging": false
+    },
+    {
+      "id": "46",
+      "type": "questionNode",
+      "position": {
+        "x": 1598.067339151482,
+        "y": 4364.129842996189
+      },
+      "data": {
+        "question": "Does a representative from the Infection Prevention Program regularly monitor the ASC to evaluate the patient care environment and infection control practices?\nNote: Relevant Certification: A representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or broad experience making them eligible to sit for the exam for Certification in Infection Control.\n\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, our organization has Infection Preventionist(s) who perform rounds on ASC for practices related to hand hygiene, isolation, cleaning/disinfection of patient care equipment, storage of supplies and nutrition, evaluates testing of water sources and reviews indications/status of invasive devices inserted in patients. ",
+          "Yes, the organization has Infection Preventionist(s) who review and monitor hand hygiene practices, but does not oversee patient care environments.",
+          "No, the organization does not have designated personnel for rounds or evaluations.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 641,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1598.067339151482,
+        "y": 4364.129842996189
+      },
+      "dragging": false
+    },
+    {
+      "id": "47",
+      "type": "questionNode",
+      "position": {
+        "x": 2047.2269799931992,
+        "y": 4351.777023534657
+      },
+      "data": {
+        "question": "Is a representative from the Infection Prevention Program appointed to perform case reviews and determine healthcare-associated infections (HAIs) for the organization?\n\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, the organization has a designated Infection Preventionist who performs case review and identifies healthcare associated infections (HAI) based on CDC NHSN approved epidemiologic definitions for HAI. ",
+          "No, the organization has a medically trained individual who is not an Infection Preventionist perform case review and identifies healthcare associated infections (HAI) based on CDC NHSN approved epidemiologic definitions for HAI. ",
+          "No, the organization does not have anybody that performs case reviews for patients that exhibit an infection he/she was not admitted with. ",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 536,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2047.2269799931992,
+        "y": 4351.777023534657
+      },
+      "dragging": false
+    },
+    {
+      "id": "48",
+      "type": "questionNode",
+      "position": {
+        "x": 1124.2125950481886,
+        "y": 5038.898098878808
+      },
+      "data": {
+        "question": "Does a representative from the Infection Prevention Program or Quality Assurance Performance Improvement (QAPI) Program enter required healthcare data into the NHSN and ensure timely and accurate reporting?\nNote: The individual demonstrates proficiency using NHSN by completion of NHSN online training.\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, a representative from the Infection Prevention Program or QAPI Program enters HAI and other required healthcare data into NHSN. This representative is proficient in NHSN and ensures timely and accurate reporting.",
+          "No, a representative from the Infection Prevention Program or QAPI Program enters HAI data into NHSN but reporting is sometimes tardy/late or inaccurate.",
+          "No, there is no individual entering HAI data into NHSN.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 560,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1124.2125950481886,
+        "y": 5038.898098878808
+      },
+      "dragging": false
+    },
+    {
+      "id": "49",
+      "type": "questionNode",
+      "position": {
+        "x": 1585.518292102998,
+        "y": 5092.111917026791
+      },
+      "data": {
+        "question": "Does a representative from the Infection Prevention Program regularly review and advise on appropriate transmission-based precautions for patients presenting with infectious diseases or conditions?\nNote: Relevant Certification: A representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or broad experience making them eligible to sit for the exam for Certification in Infection Control.\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, the organization has a dedicated Infection Preventionist who is consulted about and implements transmission-based precautions based on CDC and WHO guidelines.",
+          "Yes, the organization has a physician or advanced practice professional, not an Infection Preventionist, who implements transmission-based precautions.",
+          "Yes, The organization does not have a dedicated professional who can be consulted about appropriate transmission-based precautions. However, we do have individuals who can implement, modify, discontinue transmission-based precautions for patients presenting with an infectious disease or condition. ",
+          "No, the organization does not have designated personnel who can implement, modify, discontinue transmission-based precautions. ",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 782,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1585.518292102998,
+        "y": 5092.111917026791
+      },
+      "dragging": false
+    },
+    {
+      "id": "50",
+      "type": "questionNode",
+      "position": {
+        "x": 1580.3507177152233,
+        "y": 5890.749016185409
+      },
+      "data": {
+        "question": "Does a representative from the Infection Prevention Program attend the Infection Prevention Committee and share information with leadership regarding healthcare-associated infections (HAI) and action plans to reduce them?\nNote: Relevant Certification: A representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or broad experience making them eligible to sit for the exam for Certification in Infection Control.\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, an Infection Preventionist attends the Infection Prevention Program, sharing performance metrics on healthcare-associated infections and recommended action plans to reduce them. They ensure minutes are submitted to the QAPI program and leadership.",
+          "No, an Infection Preventionist does not attend the Infection Prevention Committee or other committees where infection prevention information is shared.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 603,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1580.3507177152233,
+        "y": 5890.749016185409
+      },
+      "dragging": false
+    },
+    {
+      "id": "51",
+      "type": "questionNode",
+      "position": {
+        "x": 1731.8079440904999,
+        "y": 6560.086094583054
+      },
+      "data": {
+        "question": "Does a representative from the Infection Prevention Program perform rounds/audits on high-level disinfection and sterilization activities in procedural locations?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, an Infection Preventionist conducts rounds/audits on disinfection and sterilization activities in procedural locations, including areas for point-of-care cleaning.",
+          "Yes, an employee who is not an Infection Preventionist performs activities related to high-level disinfection and sterilization activities performed in procedural locations, including areas in which point-of-care cleaning/disinfection take place. ",
+          "No, nobody performs rounds/audits on performance activities related to high-level disinfection and sterilization activities. ",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 497,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1731.8079440904999,
+        "y": 6560.086094583054
+      },
+      "dragging": false
+    },
+    {
+      "id": "52",
+      "type": "questionNode",
+      "position": {
+        "x": 2173.562438792483,
+        "y": 6548.201568903242
+      },
+      "data": {
+        "question": "Where is high-level disinfection and sterilization practices performed in your organization? \n",
+        "questionType": "radio",
+        "options": [
+          "Yes, sterilization and high-level-disinfection practices are performed in centralized locations (e.g. Sterile Processing Department, Endoscopy). There is no high-level disinfection performed in locations outside of these locations. For instance, medical imaging probes high-level disinfection is performed in SPD or Endoscopy. ",
+          "Yes, sterilization and high-level disinfection practices are performed primarily in centralized locations (e.g. Sterilization Processing Department, Endoscopy). However, limited high-level disinfection and/or sterilization is performed in locations outside of SPD and Endoscopy. For instance, probes undergo high-level disinfection in areas like medical imaging or specialty clinics.",
+          "No, sterilization and high-level disinfection practices are performed in areas where devices/equipment are used. For instance, surgical instruments are sterilized in the surgical setting (e.g. O.R. suite/O.R. core), Endoscopy suite, Ultrasound suites, clinic settings. The practice is highly decentralized. ",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 669,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2173.562438792483,
+        "y": 6548.201568903242
+      },
+      "dragging": false
+    },
+    {
+      "id": "53",
+      "type": "questionNode",
+      "position": {
+        "x": 1494.1128686983516,
+        "y": 7277.369171969945
+      },
+      "data": {
+        "question": "Is an Infection Control Risk Assessment (ICRA) permit for construction/maintenance performed for projects that potentially affect patient care settings, with the permit prominently posted at the construction site for the duration of the project?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, Infection Preventionist(s) at our organization complete an ICRA for all construction/maintenance activities that are performed in or near patient care areas.",
+          "Yes, Infection Preventionist(s) at our organization complete an ICRA for some projects that pose significant risk to patient care, but do not complete ICRA permits for projects that occur in or near patient care areas with moderate, minimal or low risk to patient care.",
+          "No, an ICRA permit is not completed for construction/maintenance projects.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 538,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1494.1128686983516,
+        "y": 7277.369171969945
+      },
+      "dragging": false
+    },
+    {
+      "id": "54",
+      "type": "questionNode",
+      "position": {
+        "x": 1920.109588336963,
+        "y": 7289.828323590975
+      },
+      "data": {
+        "question": "Does your organization use ICRA version 2.0 that requires a risk assessment of all adjacent locations next to construction/maintenance activities?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 280,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1920.109588336963,
+        "y": 7289.828323590975
+      },
+      "dragging": false
+    },
+    {
+      "id": "55",
+      "type": "questionNode",
+      "position": {
+        "x": 1881.2865007041892,
+        "y": 7668.593283068014
+      },
+      "data": {
+        "question": "Does a representative from Infection Prevention perform audits of nutrition, dining, and break areas to evaluate:\n(1) general cleanliness of the area and cleaning logs,\n(2) evidence of pests (e.g., rodents, insects) review of pest sighting log, (3) penetrations within walls, ceiling, floors that could introduce pests\n(4) lids on all trash bins containing food particles when not in constant use, \n(5) food cook temp and holding temp logs, dishwasher, sanitizer chemical concentration logs for critical control point and critical limits monitoring?\"\n",
+        "questionType": "radio",
+        "options": [
+          "Yes",
+          "No",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 488,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1881.2865007041892,
+        "y": 7668.593283068014
+      },
+      "dragging": false
+    },
+    {
+      "id": "56",
+      "type": "questionNode",
+      "position": {
+        "x": 2280.2276902091407,
+        "y": 8051.7996947771335
+      },
+      "data": {
+        "question": "Does your organization have a Water Management Program that addresses water quality monitoring for critical water and water management practices to ensure safe potable water with evidence of scheduled testing, test results, and documented actions implemented to maintain both critical water and potable water in accordance with  recommendations provided by the Centers for Disease Control and Prevention?\n",
+        "questionType": "radio",
+        "options": [
+          "Yes, our organization has performed a Water Infection Control Risk Assessment (WICRA) and has a fully integration Water Management Program with representation from Infection Prevention amongst other key professional with oversight of the program. The program includes aspects of preventing water stagnation, adequate disinfection, prevention of sediment, scale, corrosion, and biofilm, and maintaining water temperatures to limit the growth of Legionella. ",
+          "Yes, our organization has a Water Management Program that includes a few locations within our organization. We have minimal attendance and oversight of the Water Management Program. There is little or no representation of Infection Prevention on the Water Management Program team. ",
+          "No, our organization has not implemented a Water Management Program.",
+          "Not applicable"
+        ],
+        "isRequired": true
+      },
+      "width": 350,
+      "height": 779,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2280.2276902091407,
+        "y": 8051.7996947771335
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "14",
+      "sourceHandle": "option-1",
+      "target": "15",
+      "targetHandle": null,
+      "id": "14-15-option-1-1755066077706",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "15",
+      "sourceHandle": "option-0",
+      "target": "16",
+      "targetHandle": null,
+      "id": "15-16-option-0-1755066370650",
+      "data": {
+        "optionText": "In-person by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control. ",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "In-person by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control. ",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "15",
+      "sourceHandle": "option-1",
+      "target": "16",
+      "targetHandle": null,
+      "id": "15-16-option-1-1755066374035",
+      "data": {
+        "optionText": "Computer (virtual) based learning developed by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control.",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "Computer (virtual) based learning developed by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "18",
+      "sourceHandle": "option-0",
+      "target": "19",
+      "targetHandle": null,
+      "id": "18-19-option-0-1755067393661",
+      "data": {
+        "optionText": "Onsite",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Onsite",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "18",
+      "sourceHandle": "option-1",
+      "target": "19",
+      "targetHandle": null,
+      "id": "18-19-option-1-1755067397796",
+      "data": {
+        "optionText": "Offsite (remote) or Corporate",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "Offsite (remote) or Corporate",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "19",
+      "sourceHandle": "option-0",
+      "target": "20",
+      "targetHandle": null,
+      "id": "19-20-option-0-1755067504356",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "20",
+      "sourceHandle": "option-0",
+      "target": "21",
+      "targetHandle": null,
+      "id": "20-21-option-0-1755067612124",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "21",
+      "sourceHandle": "option-0",
+      "target": "22",
+      "targetHandle": null,
+      "id": "21-22-option-0-1755067711040",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "21",
+      "sourceHandle": "option-1",
+      "target": "23",
+      "targetHandle": null,
+      "id": "21-23-option-1-1755068097321",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "22",
+      "sourceHandle": "option-0",
+      "target": "24",
+      "targetHandle": null,
+      "id": "22-24-option-0-1755068294337",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "23",
+      "sourceHandle": "option-0",
+      "target": "25",
+      "targetHandle": null,
+      "id": "23-25-option-0-1755069007906",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "22",
+      "sourceHandle": "option-1",
+      "target": "25",
+      "targetHandle": null,
+      "id": "22-25-option-1-1755069039334",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "24",
+      "sourceHandle": "option-0",
+      "target": "25",
+      "targetHandle": null,
+      "id": "24-25-option-0-1755069065614",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "24",
+      "sourceHandle": "option-1",
+      "target": "25",
+      "targetHandle": null,
+      "id": "24-25-option-1-1755069071277",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "25",
+      "sourceHandle": "option-0",
+      "target": "26",
+      "targetHandle": null,
+      "id": "25-26-option-0-1755069457087",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "25",
+      "sourceHandle": "option-1",
+      "target": "26",
+      "targetHandle": null,
+      "id": "25-26-option-1-1755069460497",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "26",
+      "sourceHandle": "option-1",
+      "target": "27",
+      "targetHandle": null,
+      "id": "26-27-option-1-1755069661658",
+      "data": {
+        "optionText": "Yes, but we were not in full compliance",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "Yes, but we were not in full compliance",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "26",
+      "sourceHandle": "option-0",
+      "target": "28",
+      "targetHandle": null,
+      "id": "26-28-option-0-1755069992476",
+      "data": {
+        "optionText": "Yes, and we were in full compliance",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, and we were in full compliance",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "27",
+      "sourceHandle": "option-1",
+      "target": "28",
+      "targetHandle": null,
+      "id": "27-28-option-1-1755070019692",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "28",
+      "sourceHandle": "option-0",
+      "target": "29",
+      "targetHandle": null,
+      "id": "28-29-option-0-1755070262378",
+      "data": {
+        "optionText": "In-person by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control. ",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "In-person by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control. ",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "28",
+      "sourceHandle": "option-1",
+      "target": "29",
+      "targetHandle": null,
+      "id": "28-29-option-1-1755070266079",
+      "data": {
+        "optionText": "Computer (virtual) based learning developed by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control.",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "Computer (virtual) based learning developed by a representative from the Infection Prevention Program who, demonstrates proficiency either through Certification in Infection Control or equivalent experience that qualifies them for Certification in Infection Control.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "29",
+      "sourceHandle": "option-0",
+      "target": "30",
+      "targetHandle": null,
+      "id": "29-30-option-0-1755071060260",
+      "data": {
+        "optionText": "\"Highly effective: 1. Oversight of the entire healthcare organization. 2. Supported by Executive Leadership. 3. Provided the necessary resources to function at the highest level possible (e.g., access to laboratory results, integrated electronic health record with IP program specific module). 4. Electronic algorithms that help identify healthcare associated infections, and reportable infectious diseases/conditions. 5. Electronic case reporting capacity. 6. Mechanisms to perform root cause analysis of HAI and outbreak events. 7. Ability to monitor process measures (e.g., hand hygiene compliance, central line/indwelling catheter management, etc.). 8. IP program oversight by a medical provider with training in hospital epidemiology.  9. Clear, readily accessible policies/procedures regarding infection prevention. 10. Access to evidence-based literature and regulatory information to support the IP program.  11. Well attended IP Committee with representation of a diverse group of physician practices (e.g., critical care, surgery, pediatrics, OB, hospitalist, etc.).\"",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "\"Highly effective: 1. Oversight of the entire healthcare organization. 2. Supported by Executive Leadership. 3. Provided the necessary resources to function at the highest level possible (e.g., access to laboratory results, integrated electronic health record with IP program specific module). 4. Electronic algorithms that help identify healthcare associated infections, and reportable infectious diseases/conditions. 5. Electronic case reporting capacity. 6. Mechanisms to perform root cause analysis of HAI and outbreak events. 7. Ability to monitor process measures (e.g., hand hygiene compliance, central line/indwelling catheter management, etc.). 8. IP program oversight by a medical provider with training in hospital epidemiology.  9. Clear, readily accessible policies/procedures regarding infection prevention. 10. Access to evidence-based literature and regulatory information to support the IP program.  11. Well attended IP Committee with representation of a diverse group of physician practices (e.g., critical care, surgery, pediatrics, OB, hospitalist, etc.).\"",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "30",
+      "sourceHandle": "option-0",
+      "target": "31",
+      "targetHandle": null,
+      "id": "30-31-option-0-1755071248315",
+      "data": {
+        "optionText": "\"Advanced:  Transcripts/degree(s) representative of a post-graduate education (e.g., Masters, Doctorate) within Nursing, Microbiology, Medicine, Public Health, Administration, etc.). Certification Board in Infection Control (CBIC) certification (e.g., CIC, LT-CIP, AL-CIP, FAPIC). Additional certifications representing skills in quality/patient safety (e.g., project management, six-sigma black belt, Certified Professional in Healthcare Quality, etc.).  (https://www.cbic.org/CBIC/PDFs/2024-Candidate-Handbook_September-2024.pdf) and passes the CIC or LTC-CIP exam.\"",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "\"Advanced:  Transcripts/degree(s) representative of a post-graduate education (e.g., Masters, Doctorate) within Nursing, Microbiology, Medicine, Public Health, Administration, etc.). Certification Board in Infection Control (CBIC) certification (e.g., CIC, LT-CIP, AL-CIP, FAPIC). Additional certifications representing skills in quality/patient safety (e.g., project management, six-sigma black belt, Certified Professional in Healthcare Quality, etc.).  (https://www.cbic.org/CBIC/PDFs/2024-Candidate-Handbook_September-2024.pdf) and passes the CIC or LTC-CIP exam.\"",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "30",
+      "sourceHandle": "option-1",
+      "target": "31",
+      "targetHandle": null,
+      "id": "30-31-option-1-1755071251299",
+      "data": {
+        "optionText": "\"Proficient: Transcripts/degree(s) representative of graduate or post-secondary education in a health-related field, medicine, nursing, laboratory, public health, or biology. A diploma RN, and LPN/LVN, DPN, and a health-related Associate's degree, Bachelor's, Master's, or Doctorate. Who meets the eligibility requirements for Certification in Infection Control or Long-term Care Certification in Infection Control  (https://www.cbic.org/CBIC/PDFs/2024-Candidate-Handbook_September-2024.pdf) and passes the CIC or LTC-CIP exam.\"",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "\"Proficient: Transcripts/degree(s) representative of graduate or post-secondary education in a health-related field, medicine, nursing, laboratory, public health, or biology. A diploma RN, and LPN/LVN, DPN, and a health-related Associate's degree, Bachelor's, Master's, or Doctorate. Who meets the eligibility requirements for Certification in Infection Control or Long-term Care Certification in Infection Control  (https://www.cbic.org/CBIC/PDFs/2024-Candidate-Handbook_September-2024.pdf) and passes the CIC or LTC-CIP exam.\"",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "31",
+      "sourceHandle": "option-0",
+      "target": "32",
+      "targetHandle": null,
+      "id": "31-32-option-0-1755071390407",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "32",
+      "sourceHandle": "option-1",
+      "target": "33",
+      "targetHandle": null,
+      "id": "32-33-option-1-1755071697149",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "33",
+      "sourceHandle": "option-1",
+      "target": "34",
+      "targetHandle": null,
+      "id": "33-34-option-1-1755072555240",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "34",
+      "sourceHandle": "option-0",
+      "target": "35",
+      "targetHandle": null,
+      "id": "34-35-option-0-1755072858698",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "33",
+      "sourceHandle": "option-0",
+      "target": "35",
+      "targetHandle": null,
+      "id": "33-35-option-0-1755072884979",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "32",
+      "sourceHandle": "option-0",
+      "target": "35",
+      "targetHandle": null,
+      "id": "32-35-option-0-1755073036764",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "35",
+      "sourceHandle": "text-output",
+      "target": "36",
+      "targetHandle": null,
+      "id": "35-36-text-output-1755077298308",
+      "data": {
+        "optionText": "Any Text",
+        "sourceHandle": "text-output",
+        "condition": "text-input"
+      },
+      "label": "Any Text",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "36",
+      "sourceHandle": "option-1",
+      "target": "37",
+      "targetHandle": null,
+      "id": "36-37-option-1-1755077795915",
+      "data": {
+        "optionText": "No",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "No",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "36",
+      "sourceHandle": "option-0",
+      "target": "39",
+      "targetHandle": null,
+      "id": "36-39-option-0-1755078201605",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "37",
+      "sourceHandle": "option-0",
+      "target": "39",
+      "targetHandle": null,
+      "id": "37-39-option-0-1755078205537",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "39",
+      "sourceHandle": "option-0",
+      "target": "40",
+      "targetHandle": null,
+      "id": "39-40-option-0-1755078478737",
+      "data": {
+        "optionText": "Between 80 and 100%",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Between 80 and 100%",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "39",
+      "sourceHandle": "option-1",
+      "target": "40",
+      "targetHandle": null,
+      "id": "39-40-option-1-1755078481422",
+      "data": {
+        "optionText": "Between 50 and 79%",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "Between 50 and 79%",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "39",
+      "sourceHandle": "option-2",
+      "target": "40",
+      "targetHandle": null,
+      "id": "39-40-option-2-1755078484103",
+      "data": {
+        "optionText": "Between 20 and 49%",
+        "sourceHandle": "option-2",
+        "condition": "radio"
+      },
+      "label": "Between 20 and 49%",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "39",
+      "sourceHandle": "option-3",
+      "target": "40",
+      "targetHandle": null,
+      "id": "39-40-option-3-1755078486785",
+      "data": {
+        "optionText": "Less than 19%",
+        "sourceHandle": "option-3",
+        "condition": "radio"
+      },
+      "label": "Less than 19%",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "40",
+      "sourceHandle": "option-0",
+      "target": "41",
+      "targetHandle": null,
+      "id": "40-41-option-0-1755078660619",
+      "data": {
+        "optionText": "Yes, there is documented evidence of competency training for each healthcare employee with patient contact on donning and doffing PPE. Competency training is performed at orientation and as needed when there are changes to PPE products.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, there is documented evidence of competency training for each healthcare employee with patient contact on donning and doffing PPE. Competency training is performed at orientation and as needed when there are changes to PPE products.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "41",
+      "sourceHandle": "option-0",
+      "target": "42",
+      "targetHandle": null,
+      "id": "41-42-option-0-1755078971476",
+      "data": {
+        "optionText": "Yes, the organization uses hand hygiene products approved by our Infection Prevention Program and/or Employee/Occupational Health Program. Unapproved products are prohibited. These products are readily available at points of care.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, the organization uses hand hygiene products approved by our Infection Prevention Program and/or Employee/Occupational Health Program. Unapproved products are prohibited. These products are readily available at points of care.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "42",
+      "sourceHandle": "option-0",
+      "target": "43",
+      "targetHandle": null,
+      "id": "42-43-option-0-1755079246862",
+      "data": {
+        "optionText": "Yes, healthcare personnel are familiar with the organization's approved disinfectants with proven effectiveness against different pathogens and understand the manufacturer's instructions for use based on surface compatibility and dwell time.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, healthcare personnel are familiar with the organization's approved disinfectants with proven effectiveness against different pathogens and understand the manufacturer's instructions for use based on surface compatibility and dwell time.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "43",
+      "sourceHandle": "option-0",
+      "target": "44",
+      "targetHandle": null,
+      "id": "43-44-option-0-1755079606261",
+      "data": {
+        "optionText": "Yes, the organization uses PPE approved by the Infection Prevention Program and/or Employee Health/Occupational Health Program, with proven effectiveness through regulatory testing criteria. PPE is readily available for employee use.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, the organization uses PPE approved by the Infection Prevention Program and/or Employee Health/Occupational Health Program, with proven effectiveness through regulatory testing criteria. PPE is readily available for employee use.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "44",
+      "sourceHandle": "option-0",
+      "target": "45",
+      "targetHandle": null,
+      "id": "44-45-option-0-1755079798935",
+      "data": {
+        "optionText": "Yes, the organization uses evidence-based guidance from notable professional sources or policy templates in developing infection prevention policies.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, the organization uses evidence-based guidance from notable professional sources or policy templates in developing infection prevention policies.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "45",
+      "sourceHandle": "option-0",
+      "target": "46",
+      "targetHandle": null,
+      "id": "45-46-option-0-1755080164440",
+      "data": {
+        "optionText": "Yes, employees have electronic access to infection prevention policies, introduced at hire and annually thereafter.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, employees have electronic access to infection prevention policies, introduced at hire and annually thereafter.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "46",
+      "sourceHandle": "option-0",
+      "target": "47",
+      "targetHandle": null,
+      "id": "46-47-option-0-1755081640262",
+      "data": {
+        "optionText": "Yes, our organization has Infection Preventionist(s) who perform rounds on ASC for practices related to hand hygiene, isolation, cleaning/disinfection of patient care equipment, storage of supplies and nutrition, evaluates testing of water sources and reviews indications/status of invasive devices inserted in patients. ",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, our organization has Infection Preventionist(s) who perform rounds on ASC for practices related to hand hygiene, isolation, cleaning/disinfection of patient care equipment, storage of supplies and nutrition, evaluates testing of water sources and reviews indications/status of invasive devices inserted in patients. ",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "47",
+      "sourceHandle": "option-0",
+      "target": "48",
+      "targetHandle": null,
+      "id": "47-48-option-0-1755081819798",
+      "data": {
+        "optionText": "Yes, the organization has a designated Infection Preventionist who performs case review and identifies healthcare associated infections (HAI) based on CDC NHSN approved epidemiologic definitions for HAI. ",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, the organization has a designated Infection Preventionist who performs case review and identifies healthcare associated infections (HAI) based on CDC NHSN approved epidemiologic definitions for HAI. ",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "48",
+      "sourceHandle": "option-0",
+      "target": "49",
+      "targetHandle": null,
+      "id": "48-49-option-0-1755082049176",
+      "data": {
+        "optionText": "Yes, a representative from the Infection Prevention Program or QAPI Program enters HAI and other required healthcare data into NHSN. This representative is proficient in NHSN and ensures timely and accurate reporting.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, a representative from the Infection Prevention Program or QAPI Program enters HAI and other required healthcare data into NHSN. This representative is proficient in NHSN and ensures timely and accurate reporting.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "49",
+      "sourceHandle": "option-0",
+      "target": "50",
+      "targetHandle": null,
+      "id": "49-50-option-0-1755082234663",
+      "data": {
+        "optionText": "Yes, the organization has a dedicated Infection Preventionist who is consulted about and implements transmission-based precautions based on CDC and WHO guidelines.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, the organization has a dedicated Infection Preventionist who is consulted about and implements transmission-based precautions based on CDC and WHO guidelines.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "50",
+      "sourceHandle": "option-0",
+      "target": "51",
+      "targetHandle": null,
+      "id": "50-51-option-0-1755082394141",
+      "data": {
+        "optionText": "Yes, an Infection Preventionist attends the Infection Prevention Program, sharing performance metrics on healthcare-associated infections and recommended action plans to reduce them. They ensure minutes are submitted to the QAPI program and leadership.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, an Infection Preventionist attends the Infection Prevention Program, sharing performance metrics on healthcare-associated infections and recommended action plans to reduce them. They ensure minutes are submitted to the QAPI program and leadership.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "51",
+      "sourceHandle": "option-0",
+      "target": "52",
+      "targetHandle": null,
+      "id": "51-52-option-0-1755082613696",
+      "data": {
+        "optionText": "Yes, an Infection Preventionist conducts rounds/audits on disinfection and sterilization activities in procedural locations, including areas for point-of-care cleaning.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, an Infection Preventionist conducts rounds/audits on disinfection and sterilization activities in procedural locations, including areas for point-of-care cleaning.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "52",
+      "sourceHandle": "option-0",
+      "target": "53",
+      "targetHandle": null,
+      "id": "52-53-option-0-1755082889466",
+      "data": {
+        "optionText": "Yes, sterilization and high-level-disinfection practices are performed in centralized locations (e.g. Sterile Processing Department, Endoscopy). There is no high-level disinfection performed in locations outside of these locations. For instance, medical imaging probes high-level disinfection is performed in SPD or Endoscopy. ",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, sterilization and high-level-disinfection practices are performed in centralized locations (e.g. Sterile Processing Department, Endoscopy). There is no high-level disinfection performed in locations outside of these locations. For instance, medical imaging probes high-level disinfection is performed in SPD or Endoscopy. ",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "53",
+      "sourceHandle": "option-0",
+      "target": "54",
+      "targetHandle": null,
+      "id": "53-54-option-0-1755083368355",
+      "data": {
+        "optionText": "Yes, Infection Preventionist(s) at our organization complete an ICRA for all construction/maintenance activities that are performed in or near patient care areas.",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes, Infection Preventionist(s) at our organization complete an ICRA for all construction/maintenance activities that are performed in or near patient care areas.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "52",
+      "sourceHandle": "option-1",
+      "target": "53",
+      "targetHandle": null,
+      "id": "52-53-option-1-1755083392750",
+      "data": {
+        "optionText": "Yes, sterilization and high-level disinfection practices are performed primarily in centralized locations (e.g. Sterilization Processing Department, Endoscopy). However, limited high-level disinfection and/or sterilization is performed in locations outside of SPD and Endoscopy. For instance, probes undergo high-level disinfection in areas like medical imaging or specialty clinics.",
+        "sourceHandle": "option-1",
+        "condition": "radio"
+      },
+      "label": "Yes, sterilization and high-level disinfection practices are performed primarily in centralized locations (e.g. Sterilization Processing Department, Endoscopy). However, limited high-level disinfection and/or sterilization is performed in locations outside of SPD and Endoscopy. For instance, probes undergo high-level disinfection in areas like medical imaging or specialty clinics.",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "54",
+      "sourceHandle": "option-0",
+      "target": "55",
+      "targetHandle": null,
+      "id": "54-55-option-0-1755083586459",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    },
+    {
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#2196f3",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "55",
+      "sourceHandle": "option-0",
+      "target": "56",
+      "targetHandle": null,
+      "id": "55-56-option-0-1755083756060",
+      "data": {
+        "optionText": "Yes",
+        "sourceHandle": "option-0",
+        "condition": "radio"
+      },
+      "label": "Yes",
+      "labelStyle": {
+        "fill": "#2196f3",
+        "fontWeight": 600,
+        "fontSize": "12px"
+      },
+      "labelBgStyle": {
+        "fill": "white",
+        "fillOpacity": 0.9,
+        "rx": 4,
+        "stroke": "#2196f3",
+        "strokeWidth": 1
+      },
+      "labelBgPadding": [
+        4,
+        8
+      ],
+      "labelShowBg": true
+    }
+  ],
+  "createdAt": "2025-08-14T13:37:24.364Z",
+  "updatedAt": "2025-08-14T13:37:24.365Z",
+  "status": "Completed",
+  "templateName": "Ambulatory Surgical Center",
+  "facilityTypes": [
+    "Clinic"
+  ],
+  "facilityServices": [
+    "Surgery"
+  ]
+}
