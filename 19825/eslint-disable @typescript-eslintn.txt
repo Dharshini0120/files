@@ -1,0 +1,693 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  IconButton,
+  OutlinedInput,
+  Chip,
+  Autocomplete,
+} from '@mui/material';
+import { useRouter } from 'next/navigation';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import BusinessIcon from '@mui/icons-material/Business';
+import LanguageIcon from '@mui/icons-material/Language';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import HotelIcon from '@mui/icons-material/Hotel';
+import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
+import CloseIcon from '@mui/icons-material/Close';
+import { useMutation, useQuery } from '@apollo/client';
+import { toast } from 'react-toastify';
+import { SIGNUP_MUTATION } from '../../../graphql/mutations/auth';
+import { GET_ALL_FACILITY_TYPES, GET_SERVICE_LINES, GET_SERVICE_LINES_BY_FACILITY_TYPE } from '../../../graphql/queries/facility';
+import { SignUpInput } from '../../../../../shared-types/src/auth/auth.types';
+// Shared UI
+import AuthLayout from '../_shared/AuthLayout';
+import HeaderLogo from '../_shared/HeaderLogo';
+import AuthFooterNote from '../_shared/AuthFooterNote';
+import AuthButton from '../_shared/AuthButton';
+import RightImage from '../_shared/RightImage';
+
+interface CountyData {
+  [stateName: string]: string[];
+}
+interface FormState {
+  fullName: string;
+  email: string;
+  phone: string;
+  facilityName: string;
+  facilityType: string; // This will store the facility type ID
+  state: string;
+  county: string;
+  beds: string;
+  serviceLine: string[]; // This will store service line IDs
+}
+interface FormErrors {
+  [key: string]: string;
+}
+
+const SignUpPage: React.FC = () => {
+  const router = useRouter();
+
+  // Tabs
+  const [tab, setTab] = useState(1);
+
+  // Form+UI
+  const [loading, setLoading] = useState(false);
+  const [states, setStates] = useState<string[]>([]);
+  const [counties, setCounties] = useState<string[]>([]);
+  const [stateCountyData, setStateCountyData] = useState<CountyData>({});
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  // Initialize form state first
+  const [form, setForm] = useState<FormState>({
+    fullName: '',
+    email: '',
+    phone: '',
+    facilityName: '',
+    facilityType: '',
+    state: '',
+    county: '',
+    beds: '',
+    serviceLine: [],
+  });
+
+  // Dynamic facility types & service lines
+  const { data: ftData, loading: ftLoading } = useQuery(GET_ALL_FACILITY_TYPES, {
+    fetchPolicy: 'cache-first',
+  });
+
+  // Query service lines based on selected facility type
+  const { data: slData, loading: slLoading, error: slError } = useQuery(GET_SERVICE_LINES_BY_FACILITY_TYPE, {
+    variables: {
+      input: {
+        facilityTypeId: form.facilityType
+      }
+    },
+    skip: !form.facilityType, // Skip query if no facility type selected
+    fetchPolicy: 'cache-first',
+    onCompleted: (data) => {
+      console.log('🔍 Service Lines Query Response:', data);
+      console.log('🔍 Facility Type ID sent:', form.facilityType);
+      if (data?.getServiceLinesByFacilityType?.data?.length === 0) {
+        console.log('⚠️ No service lines found for facility type:', form.facilityType);
+        console.log('⚠️ Message from backend:', data?.getServiceLinesByFacilityType?.message);
+      }
+    },
+    onError: (error) => {
+      console.error('❌ Service Lines Query Error:', error);
+    }
+  });
+
+  const facilityTypes: Array<{id: string, name: string}> = useMemo(() => {
+    const list = (ftData?.getAllFacilityTypes?.data ?? [])
+      .map((f: any) => ({ id: f?.id, name: f?.name }))
+      .filter((f: any) => f.id && f.name);
+
+    // Debug: Log all facility types
+    if (list.length > 0) {
+      console.log('🔍 Available facility types:', list);
+    }
+
+    return list.length ? list.sort((a: {id: string, name: string}, b: {id: string, name: string}) => a.name.localeCompare(b.name)) : [];
+  }, [ftData]);
+
+  const serviceLines: Array<{id: string, name: string}> = useMemo(() => {
+    const list = (slData?.getServiceLinesByFacilityType?.data ?? [])
+      .map((s: any) => ({ id: s?.id, name: s?.name }))
+      .filter((s: any) => s.id && s.name);
+    return list.length ? list.sort((a: {id: string, name: string}, b: {id: string, name: string}) => a.name.localeCompare(b.name)) : [];
+  }, [slData]);
+
+  // Get the backend message for service lines
+  const serviceLineMessage = slData?.getServiceLinesByFacilityType?.message;
+
+  // States + counties (Census API) with fallback
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(
+          'https://api.census.gov/data/2019/pep/charagegroups?get=NAME&for=county:*'
+        );
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length <= 1) throw new Error();
+
+        const map: CountyData = {};
+        const uniq = new Set<string>();
+        data.slice(1).forEach((row: any) => {
+          if (row?.[0]?.includes(',')) {
+            const [countyRaw, stateRaw] = row[0].split(',');
+            const county = countyRaw.trim().replace(' County', '');
+            const state = stateRaw.trim();
+            uniq.add(state);
+            (map[state] ??= []);
+            if (!map[state].includes(county)) map[state].push(county);
+          }
+        });
+        Object.keys(map).forEach((s) => map[s].sort());
+        setStates(Array.from(uniq).sort());
+        setStateCountyData(map);
+      } catch {
+        const fallback: CountyData = {
+          Alabama: ['Autauga', 'Baldwin', 'Barbour', 'Bibb', 'Blount'],
+          Alaska: ['Aleutians East', 'Aleutians West', 'Anchorage', 'Bethel', 'Bristol Bay'],
+          Arizona: ['Apache', 'Cochise', 'Coconino', 'Gila', 'Graham'],
+          Arkansas: ['Arkansas', 'Ashley', 'Baxter', 'Benton', 'Boone'],
+          California: ['Alameda', 'Alpine', 'Amador', 'Butte', 'Calaveras'],
+          Colorado: ['Adams', 'Alamosa', 'Arapahoe', 'Archuleta', 'Baca'],
+          Connecticut: ['Fairfield', 'Hartford', 'Litchfield', 'Middlesex', 'New Haven'],
+          Delaware: ['Kent', 'New Castle', 'Sussex'],
+          Florida: ['Alachua', 'Baker', 'Bay', 'Bradford', 'Brevard'],
+          Georgia: ['Appling', 'Atkinson', 'Bacon', 'Baker', 'Baldwin'],
+          Texas: ['Anderson', 'Andrews', 'Angelina', 'Aransas', 'Archer'],
+          'New York': ['Albany', 'Allegany', 'Bronx', 'Broome', 'Cattaraugus'],
+        };
+        setStates(Object.keys(fallback).sort());
+        setStateCountyData(fallback);
+      }
+    })();
+  }, []);
+
+  // Update counties when state changes
+  useEffect(() => {
+    setCounties(form.state && stateCountyData[form.state] ? stateCountyData[form.state] : []);
+  }, [form.state, stateCountyData]);
+
+  // Labels + validation
+  const fieldLabels: Record<keyof FormState, string> = {
+    fullName: 'Full Name',
+    email: 'Email ID',
+    phone: 'Phone Number',
+    facilityName: 'Facility Name',
+    facilityType: 'Facility Type',
+    state: 'State',
+    county: 'County',
+    beds: 'Number of Licensed Beds',
+    serviceLine: 'Service Lines',
+  };
+
+  const validateField = (name: string, value: any) => {
+    const label = fieldLabels[name as keyof FormState] || name;
+    if (!value || (Array.isArray(value) && value.length === 0)) return `${label} is required`;
+    if (name === 'email') {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(value)) return `Please enter a valid ${label}`;
+    }
+    if (name === 'phone') {
+      const re = /^[0-9()+\-\s]{7,15}$/;
+      if (!re.test(value)) return `Please enter a valid ${label}`;
+    }
+    if (name === 'beds' && (isNaN(Number(value)) || value.length > 20))
+      return `Please enter a valid number for ${label}`;
+    if (name === 'fullName') {
+      const re = /^[A-Za-z ]{1,50}$/;
+      if (!re.test(value)) return `${label} should only contain alphabets and spaces (max 50)`;
+    }
+    return '';
+  };
+
+  const [signUp] = useMutation(SIGNUP_MUTATION);
+
+  // Handlers
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === 'fullName') {
+      setForm((p) => ({ ...p, [name]: value.replace(/[^A-Za-z ]/g, '').slice(0, 50) }));
+      return;
+    }
+    if (name === 'email') {
+      setForm((p) => ({ ...p, [name]: value.replace(/[{}|<>]/g, '') }));
+      return;
+    }
+    if (name === 'phone') {
+      setForm((p) => ({ ...p, [name]: value.replace(/[^0-9()+\-\s]/g, '').slice(0, 15) }));
+      return;
+    }
+    if (name === 'beds') {
+      setForm((p) => ({ ...p, [name]: value.replace(/[^0-9]/g, '').slice(0, 20) }));
+      return;
+    }
+    setForm((p) => ({ ...p, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: any) => {
+    console.log(`🔍 Field changed: ${name} = ${value}`);
+
+    if (name === 'facilityType') {
+      console.log('🔍 Selected facility type ID:', value);
+      // Find the facility type name for debugging
+      const selectedFacilityType = facilityTypes.find(ft => ft.id === value);
+      console.log('🔍 Selected facility type name:', selectedFacilityType?.name);
+    }
+
+    setForm((p) => ({
+      ...p,
+      [name]: value,
+      ...(name === 'state' ? { county: '' } : null),
+      ...(name === 'facilityType' ? { serviceLine: [] } : null) // Clear service lines when facility type changes
+    }));
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) =>
+    setErrors((prev) => ({
+      ...prev,
+      [e.target.name]: validateField(e.target.name, (e.target as any).value),
+    }));
+
+  const validateForm = () => {
+    const next: FormErrors = {};
+    (Object.keys(form) as (keyof FormState)[]).forEach(
+      (k) => (next[k] = validateField(k, form[k]))
+    );
+    setErrors(next);
+    return Object.values(next).every((v) => !v);
+  };
+
+  const isFormValid =
+    !!form.fullName &&
+    !!form.email &&
+    !!form.phone &&
+    !!form.facilityName &&
+    !!form.facilityType &&
+    !!form.state &&
+    !!form.county &&
+    !!form.beds &&
+    form.serviceLine.length > 0;
+
+  const handleContinue = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setLoading(true);
+    try {
+      const input: SignUpInput = {
+        fullName: form.fullName,
+        email: form.email,
+        phoneNumber: form.phone,
+        facilityName: form.facilityName,
+        facilityType: form.facilityType, // This is now the facility type ID
+        state: form.state,
+        county: form.county,
+        numberOfLicensedBeds: parseInt(form.beds),
+        serviceLines: form.serviceLine, // This is now an array of service line IDs
+      };
+      const res = await signUp({ variables: { input } });
+      const result = (res as any)?.data?.signUp;
+
+      if (result?.statusCode === 409) {
+        toast.error('An account with this email address already exists');
+        return;
+      }
+      if (result?.status) {
+        toast.success('Registration initiated successfully! Check your email for OTP.');
+        router.push(`/auth/otp-verification?email=${encodeURIComponent(form.email)}&flow=signup`);
+      } else {
+        toast.error(result?.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const menuProps: any = {
+    disableScrollLock: true,
+    disablePortal: true,
+    PaperProps: { sx: { maxHeight: 250 } },
+    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+    transformOrigin: { vertical: 'top', horizontal: 'left' },
+  };
+
+  // Reusable field renderer
+  const renderField = (
+    name: keyof FormState,
+    label: string,
+    placeholder: string,
+    icon: React.ReactNode,
+    options?: string[] | Array<{value: string, label: string}>,
+    isMulti?: boolean
+  ) => {
+    const hasValue = Array.isArray(form[name]) ? (form[name] as any[]).length > 0 : !!form[name];
+
+    if (name === 'serviceLine') {
+      const serviceLineOptions = Array.isArray(options) && options.length > 0 && typeof options[0] === 'object'
+        ? options as Array<{value: string, label: string}>
+        : [];
+
+      // Check if backend returned no service lines with a message
+      const hasNoServiceLines = form.facilityType && !slLoading && serviceLineOptions.length === 0 && serviceLineMessage;
+      const isDisabled = !form.facilityType || slLoading || hasNoServiceLines;
+
+      // Get display values for selected service line IDs
+      const selectedServiceLines = form.serviceLine.map(id => {
+        const option = serviceLineOptions.find(opt => opt.value === id);
+        return option ? option.label : id;
+      });
+
+      return (
+        <Autocomplete
+          multiple
+          freeSolo={!hasNoServiceLines} // Disable freeSolo when no service lines found
+          options={serviceLineOptions.map(opt => opt.label)}
+          value={selectedServiceLines}
+          onChange={(event, newValue) => {
+            // Only allow changes if not disabled due to no service lines
+            if (!hasNoServiceLines) {
+              // Convert display names back to IDs
+              const selectedIds = newValue.map(displayName => {
+                const option = serviceLineOptions.find(opt => opt.label === displayName);
+                return option ? option.value : displayName; // Keep custom entries as-is
+              });
+              setForm((prev) => ({ ...prev, serviceLine: selectedIds }));
+            }
+          }}
+          disabled={isDisabled}
+          noOptionsText={
+            !form.facilityType
+              ? "Please select a facility type first"
+              : slLoading
+                ? "Loading service lines..."
+                : serviceLineMessage || "No service lines found"
+          }
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => {
+              const { key, ...tagProps } = getTagProps({ index });
+              return (
+                <Chip
+                  key={key}
+                  label={option}
+                  size="small"
+                  {...tagProps}
+                />
+              );
+            })
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              name={name}
+              label={label}
+              placeholder={
+                hasNoServiceLines
+                  ? serviceLineMessage || "No service lines found for this facility type"
+                  : !form.facilityType
+                    ? "Please select a facility type first"
+                    : slLoading
+                      ? "Loading service lines..."
+                      : "Type to add new service line"
+              }
+              error={!!errors[name]}
+              helperText={errors[name] || ' '}
+              FormHelperTextProps={{ sx: { minHeight: 24, ml: 0 } }}
+              InputLabelProps={{
+                shrink: true,
+                sx: {
+                  fontSize: '0.95rem',
+                  color: '#9ca3af',
+                  '&.Mui-focused': { color: '#9ca3af' },
+                  transform: 'translate(14px, 16px) scale(1)',
+                  '&.MuiInputLabel-shrink': {
+                    transform: 'translate(14px, -8px) scale(0.85)',
+                    backgroundColor: '#fff',
+                    px: 0.5,
+                  },
+                },
+              }}
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ pr: 0 }}>
+                    {icon}
+                    {/* Thicker/darker divider */}
+                    <Box sx={{ height: 28, width: 2, bgcolor: '#b0b0b0', ml: 1 }} />
+                    {params.InputProps.startAdornment}
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  backgroundColor: '#fff',
+                  fontSize: '1rem',
+                  minHeight: '56px',
+                  '& fieldset': { borderColor: '#a8a8a8' },
+                  '&:hover fieldset': { borderColor: '#808080' },
+                  '&.Mui-focused fieldset': { borderColor: '#4285F4' },
+                },
+                '& .MuiOutlinedInput-input': { padding: '14px 10px' },
+              }}
+            />
+          )}
+        />
+      );
+    }
+
+    return (
+      <TextField
+        key={`${name}-field`}
+        select={!!options}
+        disabled={(name === 'county' && !form.state) || (name === 'serviceLine' && !form.facilityType)}
+        SelectProps={{
+          multiple: isMulti,
+          value: form[name] as any,
+          onChange: (e) => handleSelectChange(name, e.target.value),
+          displayEmpty: true,
+          // ✅ FIX: renderValue handles arrays and single values
+          renderValue: (selected: any) => {
+            if (Array.isArray(selected)) {
+              return selected.length > 0 ? (
+                selected.join(', ')
+              ) : (
+                <span style={{ color: '#9ca3af' }}>
+                  {name === 'county' && !form.state ? 'Select State first' : placeholder}
+                </span>
+              );
+            }
+
+            // Handle facility type display (show label instead of ID)
+            if (name === 'facilityType' && selected) {
+              const facilityTypeOptions = Array.isArray(options) && options.length > 0 && typeof options[0] === 'object'
+                ? options as Array<{value: string, label: string}>
+                : [];
+              const selectedOption = facilityTypeOptions.find(opt => opt.value === selected);
+              return selectedOption ? selectedOption.label : selected;
+            }
+
+            return selected ? (
+              selected
+            ) : (
+              <span style={{ color: '#9ca3af' }}>
+                {name === 'county' && !form.state ? 'Select State first' :
+                 name === 'serviceLine' && !form.facilityType ? 'Select Facility Type first' :
+                 placeholder}
+              </span>
+            );
+          },
+          IconComponent: hasValue ? (() => null) as any : undefined,
+          MenuProps: menuProps,
+        }}
+        name={name}
+        value={form[name] as any}
+        onChange={(e) =>
+          options ? handleSelectChange(name, (e.target as any).value) : handleInputChange(e as any)
+        }
+        onBlur={handleBlur}
+        label={label}
+        placeholder={!options ? placeholder : undefined}
+        fullWidth
+        InputLabelProps={{
+          shrink: true,
+          sx: {
+            fontSize: '0.95rem',
+            color: '#9ca3af',
+            '&.Mui-focused': { color: '#9ca3af' },
+            transform: 'translate(14px, 16px) scale(1)',
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -8px) scale(0.85)',
+              backgroundColor: '#fff',
+              px: 0.5,
+            },
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" sx={{ pr: 0.5 }}>
+              {icon}
+              {/* Thicker/darker divider */}
+              <Box sx={{ height: 28, width: 1.3, bgcolor: '#b0b0b0', ml: 1 }} />
+            </InputAdornment>
+          ),
+          endAdornment:
+            options && hasValue ? (
+              <InputAdornment position="end">
+                <IconButton edge="end" onClick={() => handleSelectChange(name, '')} size="small">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : undefined,
+        }}
+        variant="outlined"
+        error={!!errors[name]}
+        helperText={errors[name] || ' '}
+        FormHelperTextProps={{ sx: { minHeight: 20, ml: 0 } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#fff',
+            fontSize: '1rem',
+            minHeight: '56px',
+            '& fieldset': { borderColor: '#a8a8a8' },
+            '&:hover fieldset': { borderColor: '#808080' },
+            '&.Mui-focused fieldset': { borderColor: '#4285F4' },
+          },
+          '& .MuiOutlinedInput-input': { padding: '14px 10px' },
+        }}
+      >
+        {options?.map((opt) => {
+          if (typeof opt === 'string') {
+            return (
+              <MenuItem key={opt} value={opt}>
+                {opt}
+              </MenuItem>
+            );
+          } else {
+            return (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            );
+          }
+        })}
+      </TextField>
+    );
+  };
+
+  return (
+    <AuthLayout header={<HeaderLogo />} footer={<AuthFooterNote />} right={<RightImage />}>
+      <Box
+        component="form"
+        onSubmit={handleContinue}
+        sx={{ width: '100%', maxWidth: 740, display: 'flex', flexDirection: 'column', gap: 2, py: { xs: 0, md: 2 } }}
+      >
+        <Box textAlign="center">
+          <Typography fontWeight={700} fontSize="20px" color="#3D3D3D">
+            Create Account
+          </Typography>
+          <Typography fontSize="clamp(11px,1.3vw,16px)" color="#6b7280">
+            Please enter your details to continue
+          </Typography>
+        </Box>
+
+  {/* Tabs */}
+<Box
+  position="relative"
+  display="flex"
+  width="100%"
+  maxWidth="420px"
+  mx="auto"
+  borderRadius={2}
+  bgcolor="#f0eeed"
+  p={{ xs: 0.8, sm: 0.8, lg: 1 }}
+  mb={3}
+>
+  {/* fast highlight slider */}
+  <Box
+    sx={{
+      position: 'absolute',
+      top: 3,
+      left: 3,
+      width: 'calc(50% - 6px)',
+      height: 'calc(100% - 6px)',
+      borderRadius: 2,
+      bgcolor: '#fff',
+      boxShadow: 1,
+      zIndex: 1,
+      willChange: 'transform',
+      transition: 'transform 120ms cubic-bezier(.2,.9,.4,1)',
+      transform: tab === 0 ? 'translateX(0%)' : 'translateX(100%)',
+    }}
+  />
+  <Button
+    onClick={() => {
+      setTab(0);
+      router.push('/auth/signin');
+    }}
+    sx={{
+      flex: 1,
+      fontWeight: tab === 0 ? 700 : 500,
+      fontSize: '16px',
+      zIndex: 2,
+      color: tab === 0 ? '#000' : '#9ca3af',
+      textTransform: 'none',
+      minHeight: 40,
+    }}
+  >
+    Sign In
+  </Button>
+  <Button
+    onClick={() => {
+      setTab(1);
+      router.push('/auth/signup');
+    }}
+    sx={{
+      flex: 1,
+      fontWeight: tab === 1 ? 700 : 500,
+      fontSize: '16px',
+      zIndex: 2,
+      color: tab === 1 ? '#000' : '#9ca3af',
+      textTransform: 'none',
+      minHeight: 40,
+    }}
+  >
+    Sign Up
+  </Button>
+</Box>
+
+
+        {/* Fields */}
+        <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={2}>
+          {renderField('fullName', 'Full Name', 'Full Name', <PersonIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+          {renderField('email', 'Email Address', 'Email', <EmailIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+        </Box>
+        <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={2}>
+          {renderField('phone', 'Phone Number', 'Phone Number', <LocalPhoneIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+          {renderField('facilityName', 'Facility Name', 'Facility Name', <BusinessIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+        </Box>
+        <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={2}>
+          {renderField('facilityType', 'Facility Type', 'Select Facility Type', <ApartmentIcon fontSize="small" style={{ opacity: 0.7 }} />, facilityTypes.map(ft => ({ value: ft.id, label: ft.name })))}
+          {renderField('state', 'State', 'Select State', <LanguageIcon fontSize="small" style={{ opacity: 0.7 }} />, states)}
+        </Box>
+        <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={2}>
+          {renderField('county', 'County', 'Select County', <LanguageIcon fontSize="small" style={{ opacity: 0.7 }} />, counties)}
+          {renderField('beds', 'Number of Licensed Beds', 'Enter number of beds', <HotelIcon fontSize="small" style={{ opacity: 0.7 }} />)}
+        </Box>
+        {renderField(
+          'serviceLine',
+          'What service lines exist at your Facility',
+          'Choose Facility Service Line',
+          <MiscellaneousServicesIcon fontSize="small" style={{ opacity: 0.7 }} />,
+          serviceLines.map(sl => ({ value: sl.id, label: sl.name })),
+          true
+        )}
+
+        <AuthButton
+          text="Continue"
+          loadingText="Creating Account..."
+          loading={loading}
+          disabled={!isFormValid || ftLoading || slLoading}
+        />
+      </Box>
+    </AuthLayout>
+  );
+};
+
+export default SignUpPage;

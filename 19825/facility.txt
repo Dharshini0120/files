@@ -1,0 +1,41 @@
+import { gql } from '@apollo/client';
+
+export const GET_ALL_FACILITY_TYPES = gql`
+  query GetAllFacilityTypes {
+    getAllFacilityTypes {
+      status
+      message
+      statusCode
+      data
+      error
+    }
+  }
+`;
+
+export const GET_SERVICE_LINES = gql`
+  query GetServiceLines {
+    getServiceLines {
+      status
+      message
+      statusCode
+      data
+      error
+    }
+  }
+`;
+
+export const GET_SERVICE_LINES_BY_FACILITY_TYPE = gql`
+  query GetServiceLinesByFacilityType($input: GetServiceLinesByFacilityTypeInput!) {
+    getServiceLinesByFacilityType(input: $input) {
+      status
+      message
+      data {
+        id
+        name
+        description
+      }
+    }
+  }
+`;
+
+
