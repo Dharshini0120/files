@@ -1,0 +1,380 @@
+can i know why 2 templates avilable as in image when i call query {
+  usersTemplates(
+    facilities: [
+      {
+        facility_id: "68a414a7545212a68ada79ae"
+        services: [
+          "68a414a7545212a68ada79c0",
+          "68a414a7545212a68ada79c1", 
+          "68a414a7545212a68ada79c2"
+        ]
+      }
+    ]
+  ) {
+    scenarioVersions {
+      _id
+      scenario {
+        _id
+        name
+        facilities
+        services
+      }
+      version
+      status
+      isLatest
+      facilities
+      services
+      questionnaire
+      createdAt
+    }
+  }
+}
+
+{
+  "data": {
+    "usersTemplates": {
+      "scenarioVersions": [
+        {
+          "_id": "68a44b4842d97d6b370dab18",
+          "scenario": {
+            "_id": "68a44b4842d97d6b370dab16",
+            "name": "Create",
+            "facilities": [
+              "68a414a7545212a68ada79ae",
+              "68a414a7545212a68ada79ba",
+              "68a414a7545212a68ada79af",
+              "68a414a7545212a68ada79b1"
+            ],
+            "services": [
+              "68a414a7545212a68ada79c0",
+              "68a414a7545212a68ada79c1",
+              "68a414a7545212a68ada79c2",
+              "68a414a7545212a68ada79c3"
+            ]
+          },
+          "version": "V1",
+          "status": "ACTIVE",
+          "isLatest": true,
+          "facilities": [
+            "68a414a7545212a68ada79ae",
+            "68a414a7545212a68ada79ba",
+            "68a414a7545212a68ada79af",
+            "68a414a7545212a68ada79b1"
+          ],
+          "services": [
+            "68a414a7545212a68ada79c0",
+            "68a414a7545212a68ada79c1",
+            "68a414a7545212a68ada79c2",
+            "68a414a7545212a68ada79c3"
+          ],
+          "questionnaire": {
+            "nodes": [
+              {
+                "id": "1",
+                "type": "questionNode",
+                "position": {
+                  "x": 450,
+                  "y": 193
+                },
+                "data": {
+                  "question": "Hello",
+                  "questionType": "text-input",
+                  "options": [],
+                  "isRequired": false
+                },
+                "width": 280,
+                "height": 130
+              },
+              {
+                "id": "2",
+                "type": "questionNode",
+                "position": {
+                  "x": 850,
+                  "y": 243
+                },
+                "data": {
+                  "question": "Hii",
+                  "questionType": "text-input",
+                  "options": [],
+                  "isRequired": false
+                },
+                "width": 280,
+                "height": 130
+              }
+            ],
+            "edges": [
+              {
+                "type": "smoothstep",
+                "animated": true,
+                "style": {
+                  "stroke": "#2196f3",
+                  "strokeWidth": 2,
+                  "strokeDasharray": "5,5"
+                },
+                "source": "1",
+                "sourceHandle": "text-output",
+                "target": "2",
+                "targetHandle": null,
+                "id": "1-2-text-output-1755597638423",
+                "data": {
+                  "optionText": "Any Text",
+                  "sourceHandle": "text-output",
+                  "condition": "text-input"
+                },
+                "label": "Any Text",
+                "labelStyle": {
+                  "fill": "#2196f3",
+                  "fontWeight": 600,
+                  "fontSize": "12px"
+                },
+                "labelBgStyle": {
+                  "fill": "white",
+                  "fillOpacity": 0.9,
+                  "rx": 4,
+                  "stroke": "#2196f3",
+                  "strokeWidth": 1
+                },
+                "labelBgPadding": [
+                  4,
+                  8
+                ],
+                "labelShowBg": true
+              }
+            ],
+            "templateName": "Create"
+          },
+          "createdAt": "2025-08-19T10:00:40.551Z"
+        },
+        {
+          "_id": "68a44b8642d97d6b370dab2c",
+          "scenario": {
+            "_id": "68a44b8642d97d6b370dab2a",
+            "name": "Template",
+            "facilities": [
+              "68a414a7545212a68ada79ae",
+              "68a414a7545212a68ada79ba",
+              "68a414a7545212a68ada79af",
+              "68a414a7545212a68ada79b1"
+            ],
+            "services": [
+              "68a414a7545212a68ada79c0",
+              "68a414a7545212a68ada79c1"
+            ]
+          },
+          "version": "V1",
+          "status": "ACTIVE",
+          "isLatest": true,
+          "facilities": [
+            "68a414a7545212a68ada79ae",
+            "68a414a7545212a68ada79ba",
+            "68a414a7545212a68ada79af",
+            "68a414a7545212a68ada79b1"
+          ],
+          "services": [
+            "68a414a7545212a68ada79c0",
+            "68a414a7545212a68ada79c1"
+          ],
+          "questionnaire": {
+            "nodes": [
+              {
+                "id": "1",
+                "type": "questionNode",
+                "position": {
+                  "x": 450,
+                  "y": 193
+                },
+                "data": {
+                  "question": "Mongo",
+                  "questionType": "text-input",
+                  "options": [],
+                  "isRequired": false
+                },
+                "width": 280,
+                "height": 130
+              },
+              {
+                "id": "2",
+                "type": "questionNode",
+                "position": {
+                  "x": 850,
+                  "y": 243
+                },
+                "data": {
+                  "question": "Db",
+                  "questionType": "text-input",
+                  "options": [],
+                  "isRequired": false
+                },
+                "width": 280,
+                "height": 130
+              }
+            ],
+            "edges": [
+              {
+                "type": "smoothstep",
+                "animated": true,
+                "style": {
+                  "stroke": "#2196f3",
+                  "strokeWidth": 2,
+                  "strokeDasharray": "5,5"
+                },
+                "source": "1",
+                "sourceHandle": "text-output",
+                "target": "2",
+                "targetHandle": null,
+                "id": "1-2-text-output-1755597700943",
+                "data": {
+                  "optionText": "Any Text",
+                  "sourceHandle": "text-output",
+                  "condition": "text-input"
+                },
+                "label": "Any Text",
+                "labelStyle": {
+                  "fill": "#2196f3",
+                  "fontWeight": 600,
+                  "fontSize": "12px"
+                },
+                "labelBgStyle": {
+                  "fill": "white",
+                  "fillOpacity": 0.9,
+                  "rx": 4,
+                  "stroke": "#2196f3",
+                  "strokeWidth": 1
+                },
+                "labelBgPadding": [
+                  4,
+                  8
+                ],
+                "labelShowBg": true
+              }
+            ],
+            "templateName": "Template"
+          },
+          "createdAt": "2025-08-19T10:01:42.425Z"
+        },
+        {
+          "_id": "68a44bdd42d97d6b370dab3c",
+          "scenario": {
+            "_id": "68a44bdd42d97d6b370dab3a",
+            "name": "Assessment",
+            "facilities": [
+              "68a414a7545212a68ada79ae"
+            ],
+            "services": [
+              "68a414a7545212a68ada79c0"
+            ]
+          },
+          "version": "V1",
+          "status": "ACTIVE",
+          "isLatest": true,
+          "facilities": [
+            "68a414a7545212a68ada79ae"
+          ],
+          "services": [
+            "68a414a7545212a68ada79c0"
+          ],
+          "questionnaire": {
+            "nodes": [
+              {
+                "id": "1",
+                "type": "questionNode",
+                "position": {
+                  "x": 450,
+                  "y": 193
+                },
+                "data": {
+                  "question": "Facility",
+                  "questionType": "text-input",
+                  "options": [],
+                  "isRequired": false
+                },
+                "width": 280,
+                "height": 130
+              },
+              {
+                "id": "2",
+                "type": "questionNode",
+                "position": {
+                  "x": 850,
+                  "y": 243
+                },
+                "data": {
+                  "question": "Type",
+                  "questionType": "text-input",
+                  "options": [],
+                  "isRequired": false
+                },
+                "width": 280,
+                "height": 130
+              }
+            ],
+            "edges": [
+              {
+                "type": "smoothstep",
+                "animated": true,
+                "style": {
+                  "stroke": "#2196f3",
+                  "strokeWidth": 2,
+                  "strokeDasharray": "5,5"
+                },
+                "source": "1",
+                "sourceHandle": "text-output",
+                "target": "temp-edit-node",
+                "targetHandle": null,
+                "id": "1-temp-edit-node-text-output-1755597786582",
+                "data": {
+                  "optionText": "Any Text",
+                  "sourceHandle": "text-output",
+                  "condition": "text-input"
+                },
+                "label": "Any Text",
+                "labelStyle": {
+                  "fill": "#2196f3",
+                  "fontWeight": 600,
+                  "fontSize": "12px"
+                },
+                "labelBgStyle": {
+                  "fill": "white",
+                  "fillOpacity": 0.9,
+                  "rx": 4,
+                  "stroke": "#2196f3",
+                  "strokeWidth": 1
+                },
+                "labelBgPadding": [
+                  4,
+                  8
+                ],
+                "labelShowBg": true
+              }
+            ],
+            "templateName": "Assessment"
+          },
+          "createdAt": "2025-08-19T10:03:09.369Z"
+        }
+      ]
+    }
+  }
+} also my response json look  like below image where in the first object under "scenarioVersions": [  {
+          "_id": "68a5e9ca428b53646c7fe806",
+          "scenario": {
+            "_id": "68a5e9ca428b53646c7fe804",
+            "name": "Ambulatory Surgical Center",
+            "facilities": [
+              "68a414a7545212a68ada79ba",.....}, {
+          "_id": "68a6f576f534904f84b8afad",
+          "scenario": {
+            "_id": "68a5eaba428b53646c7fe80c",
+            "name": "Outpatient Dialysis",
+            "facilities": [
+              "68a414a7545212a68ada79b4",....}],  if i have in this way then for each object's name should be patched for tab/section name in assessment/new page  so i have Ambulatory Surgical Center in one tab that will be my current tab and "Outpatient Dialysis" as next tab section name below which its corresponding quetionary should be displayed by taking  the nodes and edges from  "questionnaire": {
+            "nodes": [],"edges":[]   handle that so that it works correct in all scenarios
+    
+
+
+
+
+
+
+
+
+
