@@ -18,9 +18,6 @@ import { withPageLoader } from "@frontend/shared-ui";
 import { GET_USERS_TEMPLATES_QUERY, FacilityWithServicesInput, GetUsersTemplatesData } from '../../graphql/templates.service';
 import { RootState } from '../../store/store';
 
-// ⬇️ NEW: import your template JSON instead of reading localStorage
-import templateJson from '../../data/hospitalTemplate.json';
-
 const statusStyles: any = {
   'In Progress': {
     backgroundColor: '#fff3cd',
@@ -42,16 +39,7 @@ const statusStyles: any = {
   },
 };
 
-type Template = {
-  id: string;
-  name: string;
-  description: string;
-  nodes: any[];
-  edges: any[];
-  status?: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
+
 
 const Assessment = () => {
   const [status, setStatus] = React.useState('');
@@ -122,23 +110,8 @@ const Assessment = () => {
     );
 
     if (availableTemplates.length === 0) {
-      // Fallback to local template if no API templates available
-      const templates: Template[] = Array.isArray(templateJson)
-        ? (templateJson as Template[])
-        : [templateJson as Template];
-
-      const completedTemplates = templates.filter(
-        (t) =>
-          (t.status ?? 'Completed') === 'Completed' &&
-          Array.isArray(t.nodes) &&
-          Array.isArray(t.edges) &&
-          t.nodes.length > 0
-      );
-
-      if (completedTemplates.length === 0) {
-        toast.error('No templates available for assessment. Please contact your administrator.');
-        return;
-      }
+      toast.error('No templates available for assessment. Please contact your administrator.');
+      return;
     }
 
     // Store ALL available templates data in sessionStorage for the assessment page
