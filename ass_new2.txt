@@ -24,9 +24,6 @@ import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import QuestionInput from "../../../components/questionnaire/QuestionInput";
 
-// ⬇️ NEW: import your template JSON instead of reading localStorage
-import hospitalTemplate from "../../../data/hospitalTemplate.json";
-
 interface Template {
   id: string;
   name: string;
@@ -43,8 +40,6 @@ const AssessmentPage = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
   const [isUserSet, setIsUserSet] = useState(true);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -54,8 +49,6 @@ const AssessmentPage = () => {
 
   useEffect(() => {
     setMounted(true);
-    setUserName("Sarah Johnson");
-    setUserEmail("");
     setIsUserSet(true);
   }, []);
 
@@ -108,8 +101,10 @@ const AssessmentPage = () => {
           console.log(`🔄 Filtered to ${uniqueTemplates.length} unique templates with questionnaires`);
 
           if (uniqueTemplates.length === 0) {
-            console.log('❌ No valid templates with questionnaires found, falling back to local template');
-            // Fall through to local template loading
+            console.log('❌ No valid templates with questionnaires found');
+            alert("No valid templates found. Please try creating a new assessment from the main page.");
+            router.push("/assessment");
+            return;
           } else {
             // Convert unique API templates into a single template with multiple sections
             const combinedTemplate: Template = {
@@ -188,35 +183,11 @@ const AssessmentPage = () => {
         }
       }
 
-      // Fallback to local template file
-      console.log('🔄 Falling back to local template file');
-      const tmpl = (hospitalTemplate as unknown) as Partial<Template>;
-      const hasUsableTemplate =
-        tmpl &&
-        Array.isArray(tmpl.nodes) &&
-        tmpl.nodes.length > 0 &&
-        Array.isArray(tmpl.edges);
-
-      if (!hasUsableTemplate) {
-        alert("No valid template found. Please try creating a new assessment from the main page.");
-        router.push("/assessment");
-        return;
-      }
-
-      // Fill any missing meta fields so existing code remains happy
-      const hydrated: Template = {
-        id: (tmpl.id as string) ?? "imported-template",
-        name: (tmpl.name as string) ?? "Imported Template",
-        description: (tmpl.description as string) ?? "",
-        nodes: tmpl.nodes as any[],
-        edges: tmpl.edges as any[],
-        status: (tmpl.status as string) ?? "Completed",
-        createdAt: (tmpl.createdAt as string) ?? new Date().toISOString(),
-        updatedAt: (tmpl.updatedAt as string) ?? new Date().toISOString(),
-      };
-
-      setTemplate(hydrated);
-      setLoading(false);
+      // No templates found in sessionStorage
+      console.log('❌ No templates found in sessionStorage');
+      alert("No templates found. Please try creating a new assessment from the main page.");
+      router.push("/assessment");
+      return;
     } catch (e) {
       console.error("❌ Error loading template from file:", e);
       alert("Failed to load template");
@@ -370,13 +341,72 @@ const AssessmentPage = () => {
   const getQuestionsForSection = (sectionId: string) => {
     if (!template?.nodes) return [];
 
-    // For template-based sections, get all questions that belong to this template section
+    // For template-based sections, implement proper navigation logic
     if (sectionId.startsWith('template-section-')) {
-      return template.nodes
+      // Get all questions that belong to this template section
+      const allSectionQuestions = template.nodes
         .filter((node) =>
           isQuestionNode(node) &&
           node.data?.templateSection === sectionId
-        );
+        )
+        .sort(sortQuestions);
+
+      if (allSectionQuestions.length === 0) return [];
+
+      // Find the first question in this section
+      const firstQuestion = allSectionQuestions[0];
+      if (!firstQuestion) return [];
+
+      // Use the reachable questions logic starting from the first question
+      const visited = new Set<string>();
+      const queue: string[] = [firstQuestion.id];
+      const reachableQuestions: any[] = [];
+
+      while (queue.length) {
+        const nodeId = queue.shift()!;
+        if (visited.has(nodeId)) continue;
+        visited.add(nodeId);
+
+        // Find the actual node
+        const node = template.nodes.find(n => n.id === nodeId);
+        if (node && isQuestionNode(node) && node.data?.templateSection === sectionId) {
+          reachableQuestions.push(node);
+        }
+
+        const nodeAnswer = answers[nodeId];
+        const outgoing = template.edges.filter((e) => e.source === nodeId);
+
+        if (nodeAnswer === undefined || nodeAnswer === null || nodeAnswer === "") {
+          // If no answer yet, show all possible next questions
+          outgoing
+            .filter((e) => e.target)
+            .forEach((e) => {
+              if (e.target && !visited.has(e.target)) {
+                const targetNode = template.nodes.find(n => n.id === e.target);
+                if (targetNode && targetNode.data?.templateSection === sectionId) {
+                  queue.push(e.target);
+                }
+              }
+            });
+        } else {
+          // If answered, follow the matching edges
+          const matched = outgoing.filter((e) => checkEdgeCondition(e, nodeAnswer));
+          const hasEnd = matched.some((e) => !e.target);
+          if (!hasEnd) {
+            matched.forEach((e) => {
+              if (e.target && !visited.has(e.target)) {
+                const targetNode = template.nodes.find(n => n.id === e.target);
+                if (targetNode && targetNode.data?.templateSection === sectionId) {
+                  queue.push(e.target);
+                }
+              }
+            });
+          }
+        }
+      }
+
+      console.log(`🔍 Section ${sectionId}: Found ${reachableQuestions.length} reachable questions`);
+      return reachableQuestions.sort(sortQuestions);
     }
 
     // For traditional sections, use the existing reachable questions logic
@@ -388,9 +418,14 @@ const AssessmentPage = () => {
     const sections = template.nodes
       .filter((n) => n.type === "sectionNode" && n.data?.sectionName)
       .sort((a, b) => {
-        const an = parseInt(String(a.id).replace("section-", ""), 10);
-        const bn = parseInt(String(b.id).replace("section-", ""), 10);
-        return (isNaN(an) ? 9999 : an) - (isNaN(bn) ? 9999 : bn);
+        // Handle both traditional section-X and template-section-X formats
+        const aNum = a.id.startsWith('template-section-')
+          ? parseInt(a.id.replace('template-section-', ''), 10)
+          : parseInt(String(a.id).replace("section-", ""), 10);
+        const bNum = b.id.startsWith('template-section-')
+          ? parseInt(b.id.replace('template-section-', ''), 10)
+          : parseInt(String(b.id).replace("section-", ""), 10);
+        return (isNaN(aNum) ? 9999 : aNum) - (isNaN(bNum) ? 9999 : bNum);
       });
 
     console.log('🔍 Found sections:', sections.map(s => ({ id: s.id, name: s.data?.sectionName })));
@@ -506,7 +541,6 @@ const AssessmentPage = () => {
   }
 
   const sections = getSections();
-  const isLastSection = currentSectionIndex === sections.length - 1;
 
   return (
     <DashboardLayout
