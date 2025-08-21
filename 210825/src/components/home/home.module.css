@@ -1,0 +1,44 @@
+@media (min-width: 1536px) {
+    .heroTextContainer {
+        width: 78% !important;
+        max-width: 1300px !important;
+        margin-left: -225px !important;
+        margin-right: 0 !important;
+        padding-top: -2px !important;
+        padding-left: 25px !important;
+        min-height: 600px !important;
+        margin-top: -109px !important;
+    }
+}
+
+
+
+@media (min-width: 900px) {
+    .css-lqgcu6-MuiTypography-root {
+        font-size: 33px;
+    }
+}
+
+@media (min-width: 900px) {
+    .css-1dzybp-MuiTypography-root {
+        font-size: 44.8;
+    }
+}
+
+@media (min-width: 900px) {
+    .css-1n4ryha {
+        height: 870px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        width: 105%;
+    }
+}
+
+
+
+.cardImageAbsolute {
+    position: absolute;
+    right: -69px;
+    bottom: -3px;
+    z-index: 1;
+}

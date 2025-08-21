@@ -1,0 +1,91 @@
+export type PortalType = 'user' | 'admin';
+
+interface UserInfo {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  facilities?: Array<{
+    facility_id: string;
+    services: string[];
+    _id: string;
+  }>;
+}
+
+class SessionAuthStorage {
+  private getTokenKey(portal: PortalType): string {
+    return `${portal}_portal_token`;
+  }
+
+  private getUserKey(portal: PortalType): string {
+    return `${portal}_portal_user`;
+  }
+
+  // Token methods
+  setToken(token: string, portal: PortalType): void {
+    if (typeof window === 'undefined') return;
+    const key = this.getTokenKey(portal);
+    sessionStorage.setItem(key, token);
+  }
+
+  getToken(portal: PortalType): string | null {
+    if (typeof window === 'undefined') return null;
+    const key = this.getTokenKey(portal);
+    return sessionStorage.getItem(key);
+  }
+
+  removeToken(portal: PortalType): void {
+    if (typeof window === 'undefined') return;
+    const key = this.getTokenKey(portal);
+    sessionStorage.removeItem(key);
+  }
+
+  // User info methods
+  setUserInfo(userInfo: UserInfo, portal: PortalType): void {
+    if (typeof window === 'undefined') return;
+    const key = this.getUserKey(portal);
+    sessionStorage.setItem(key, JSON.stringify(userInfo));
+  }
+
+  getUserInfo(portal: PortalType): UserInfo | null {
+    if (typeof window === 'undefined') return null;
+    const key = this.getUserKey(portal);
+    const userStr = sessionStorage.getItem(key);
+    if (!userStr) return null;
+    
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return null;
+    }
+  }
+
+  removeUserInfo(portal: PortalType): void {
+    if (typeof window === 'undefined') return;
+    const key = this.getUserKey(portal);
+    sessionStorage.removeItem(key);
+  }
+
+  // Combined methods
+  setCredentials(token: string, userInfo: UserInfo, portal: PortalType): void {
+    this.setToken(token, portal);
+    this.setUserInfo(userInfo, portal);
+  }
+
+  clearCredentials(portal: PortalType): void {
+    this.removeToken(portal);
+    this.removeUserInfo(portal);
+  }
+
+  clearAllCredentials(): void {
+    this.clearCredentials('user');
+    this.clearCredentials('admin');
+  }
+
+  // Check if authenticated
+  isAuthenticated(portal: PortalType): boolean {
+    return !!this.getToken(portal);
+  }
+}
+
+export const sessionAuthStorage = new SessionAuthStorage();
