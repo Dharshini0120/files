@@ -1,4 +1,4 @@
-can i know why 2 templates avilable as in image when i call query {
+instaed of importing hospitalTemplate from "../../../data/hospitalTemplate.json"; use the response from Userstemplate and show questions with option based navigating to next question using my response  and remove the hardcoded  hospitalTemplate json completely from my projectcan i know why 2 templates avilable as in image when i call query {
   usersTemplates(
     facilities: [
       {
@@ -369,6 +369,7 @@ can i know why 2 templates avilable as in image when i call query {
               "68a414a7545212a68ada79b4",....}],  if i have in this way then for each object's name should be patched for tab/section name in assessment/new page  so i have Ambulatory Surgical Center in one tab that will be my current tab and "Outpatient Dialysis" as next tab section name below which its corresponding quetionary should be displayed by taking  the nodes and edges from  "questionnaire": {
             "nodes": [],"edges":[]   handle that so that it works correct in all scenarios
     
+
 
 
 
