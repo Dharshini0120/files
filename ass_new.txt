@@ -1,0 +1,700 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  LinearProgress,
+  Alert,
+  Chip,
+  Tabs,
+  Tab,
+  Divider,
+} from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
+import DashboardLayout from "../../../components/layout/DashboardLayout";
+import QuestionInput from "../../../components/questionnaire/QuestionInput";
+
+// ⬇️ NEW: import your template JSON instead of reading localStorage
+import hospitalTemplate from "../../../data/hospitalTemplate.json";
+
+interface Template {
+  id: string;
+  name: string;
+  description: string;
+  nodes: any[];
+  edges: any[];
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const AssessmentPage = () => {
+  const router = useRouter();
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [isUserSet, setIsUserSet] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+
+  const questionsTopRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setUserName("Sarah Johnson");
+    setUserEmail("");
+    setIsUserSet(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) loadTemplateFromFile();
+  }, [mounted]);
+
+  // Load templates from API response (stored in sessionStorage) or fallback to local file
+  const loadTemplateFromFile = () => {
+    try {
+      // First try to get templates from API response (stored in sessionStorage)
+      const apiTemplatesData = sessionStorage.getItem('selectedTemplates');
+
+      if (apiTemplatesData) {
+        const apiTemplates = JSON.parse(apiTemplatesData);
+        console.log('🔄 Loading templates from API:', apiTemplates);
+
+        if (apiTemplates && Array.isArray(apiTemplates) && apiTemplates.length > 0) {
+          // Convert multiple API templates into a single template with multiple sections
+          const combinedTemplate: Template = {
+            id: 'combined-assessment',
+            name: 'Multi-Template Assessment',
+            description: `Assessment with ${apiTemplates.length} template(s)`,
+            nodes: [],
+            edges: [],
+            status: 'Completed',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+
+          // Create sections for each template
+          apiTemplates.forEach((apiTemplate: any, index: number) => {
+            // Create a section node for this template
+            const sectionNode = {
+              id: `template-section-${index}`,
+              type: 'sectionNode',
+              position: { x: 0, y: index * 100 },
+              data: {
+                sectionName: apiTemplate.name // "Ambulatory Surgical Center", "Outpatient Dialysis", etc.
+              }
+            };
+
+            combinedTemplate.nodes.push(sectionNode);
+
+            // Add all questions from this template's questionnaire
+            if (apiTemplate.questionnaire?.nodes) {
+              apiTemplate.questionnaire.nodes.forEach((node: any) => {
+                // Prefix node IDs to avoid conflicts between templates
+                const prefixedNode = {
+                  ...node,
+                  id: `template-${index}-${node.id}`,
+                  data: {
+                    ...node.data,
+                    templateSection: `template-section-${index}` // Link to section
+                  }
+                };
+                combinedTemplate.nodes.push(prefixedNode);
+              });
+            }
+
+            // Add edges from this template's questionnaire
+            if (apiTemplate.questionnaire?.edges) {
+              apiTemplate.questionnaire.edges.forEach((edge: any) => {
+                // Prefix edge IDs to avoid conflicts
+                const prefixedEdge = {
+                  ...edge,
+                  id: `template-${index}-${edge.id}`,
+                  source: `template-${index}-${edge.source}`,
+                  target: `template-${index}-${edge.target}`
+                };
+                combinedTemplate.edges.push(prefixedEdge);
+              });
+            }
+          });
+
+          console.log('🔄 Combined template:', combinedTemplate);
+          console.log('🔄 Number of sections:', apiTemplates.length);
+          console.log('🔄 Total nodes:', combinedTemplate.nodes.length);
+
+          setTemplate(combinedTemplate);
+          setLoading(false);
+          // Clear the templates from sessionStorage after loading
+          sessionStorage.removeItem('selectedTemplates');
+          return;
+        }
+      }
+
+      // Fallback to local template file
+      console.log('🔄 Falling back to local template file');
+      const tmpl = (hospitalTemplate as unknown) as Partial<Template>;
+      const hasUsableTemplate =
+        tmpl &&
+        Array.isArray(tmpl.nodes) &&
+        tmpl.nodes.length > 0 &&
+        Array.isArray(tmpl.edges);
+
+      if (!hasUsableTemplate) {
+        alert("No valid template found. Please try creating a new assessment from the main page.");
+        router.push("/assessment");
+        return;
+      }
+
+      // Fill any missing meta fields so existing code remains happy
+      const hydrated: Template = {
+        id: (tmpl.id as string) ?? "imported-template",
+        name: (tmpl.name as string) ?? "Imported Template",
+        description: (tmpl.description as string) ?? "",
+        nodes: tmpl.nodes as any[],
+        edges: tmpl.edges as any[],
+        status: (tmpl.status as string) ?? "Completed",
+        createdAt: (tmpl.createdAt as string) ?? new Date().toISOString(),
+        updatedAt: (tmpl.updatedAt as string) ?? new Date().toISOString(),
+      };
+
+      setTemplate(hydrated);
+      setLoading(false);
+    } catch (e) {
+      console.error("❌ Error loading template from file:", e);
+      alert("Failed to load template");
+      router.push("/dashboard");
+    }
+  };
+
+  const handleAnswerChange = (questionId: string, answer: any) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    setTimeout(() => {
+      const visible = getQuestionNodes();
+      if (currentQuestionIndex >= visible.length && visible.length > 0) {
+        setCurrentQuestionIndex(visible.length - 1);
+      }
+    }, 0);
+  };
+
+  const handleNextSection = () => {
+    const sections = getSections();
+    if (currentSectionIndex < sections.length - 1) {
+      setCurrentSectionIndex((p) => p + 1);
+      questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+  const handlePreviousSection = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex((p) => p - 1);
+      questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+  const handleSaveDraft = async () => console.log("Saving draft...", answers);
+  const handleSubmitAssessment = async () => console.log("Submitting assessment...", answers);
+
+  // ---------------- FLOW / ORDERING / VISIBILITY HELPERS ----------------
+
+  const isQuestionNode = (n: any) =>
+    n?.type === "questionNode" &&
+    n?.data?.question &&
+    ["radio", "checkbox", "text-input", "multiple-choice", "yes-no"].includes(
+      n?.data?.questionType
+    );
+
+  const parseQId = (id: string) => {
+    const m = String(id).trim().match(/^q(\d+)([a-z])?$/i);
+    const num = m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
+    const suf = m && m[2] ? m[2].toLowerCase() : "";
+    return { num, suf };
+  };
+  const sortQuestions = (a: any, b: any) => {
+    const A = parseQId(a.id);
+    const B = parseQId(b.id);
+    if (A.num !== B.num) return A.num - B.num;
+    if (A.suf !== B.suf) return A.suf.localeCompare(B.suf);
+    if (a.position?.y !== b.position?.y) return (a.position?.y ?? 0) - (b.position?.y ?? 0);
+    return (a.position?.x ?? 0) - (b.position?.x ?? 0);
+  };
+
+  const getAllQuestionNodesInSection = (_sectionId: string) => {
+    if (!template?.nodes) return [];
+    return template.nodes.filter(isQuestionNode).slice().sort(sortQuestions);
+  };
+
+  const getFirstQuestionInSection = (sectionId: string) => {
+    if (!template) return null;
+    const startEdge = template.edges.find((e) => e.source === sectionId && e.target);
+    const startNode = startEdge
+      ? template.nodes.find((n) => n.id === startEdge.target)
+      : null;
+    if (startNode && isQuestionNode(startNode)) return startNode;
+    const all = getAllQuestionNodesInSection(sectionId);
+    return all[0] ?? null;
+  };
+
+  const checkEdgeCondition = (edge: any, answer: any) => {
+    if (edge?.sourceHandle === "text-output" || edge?.data?.condition === "text-input") {
+      return String(answer ?? "").trim() !== "";
+    }
+
+    const expected: string[] = [];
+
+    if (edge?.data?.optionText) expected.push(edge.data.optionText);
+
+    const sourceNode = template?.nodes.find((n) => n.id === edge.source);
+    const m = edge?.sourceHandle?.match(/option-(\d+)/);
+    if (m && sourceNode?.data?.options) {
+      const idx = parseInt(m[1], 10);
+      const opt = sourceNode.data.options[idx];
+      if (opt) expected.push(opt);
+    }
+
+    if (edge?.label) expected.push(edge.label);
+
+    if (Array.isArray(answer)) return answer.some((a) => expected.includes(a));
+    return expected.includes(answer);
+  };
+
+  const getEndActionForAnswer = (sourceId: string, answer: any): string | null => {
+    if (!template || answer === undefined || answer === null || answer === "") return null;
+    const outgoing = template.edges.filter((e) => e.source === sourceId);
+    for (const e of outgoing) {
+      if (checkEdgeCondition(e, answer) && !e.target) {
+        return e.data?.endAction || e.label || null;
+      }
+    }
+    return null;
+  };
+
+  const getReachableQuestions = (sectionId: string) => {
+    if (!template?.nodes || !template?.edges) return [];
+
+    const start = getFirstQuestionInSection(sectionId);
+    if (!start) return [];
+
+    const visited = new Set<string>();
+    const queue: string[] = [start.id];
+
+    while (queue.length) {
+      const nodeId = queue.shift()!;
+      if (visited.has(nodeId)) continue;
+      visited.add(nodeId);
+
+      const nodeAnswer = answers[nodeId];
+      const outgoing = template.edges.filter((e) => e.source === nodeId);
+
+      if (nodeAnswer === undefined || nodeAnswer === null || nodeAnswer === "") {
+        outgoing
+          .filter((e) => e.target)
+          .forEach((e) => {
+            if (e.target && !visited.has(e.target)) queue.push(e.target);
+          });
+      } else {
+        const matched = outgoing.filter((e) => checkEdgeCondition(e, nodeAnswer));
+        const hasEnd = matched.some((e) => !e.target);
+        if (!hasEnd) {
+          matched.forEach((e) => {
+            if (e.target && !visited.has(e.target)) queue.push(e.target);
+          });
+        }
+      }
+    }
+
+    const nodes = Array.from(visited)
+      .map((id) => template.nodes.find((n) => n.id === id))
+      .filter(Boolean)
+      .filter(isQuestionNode) as any[];
+
+    nodes.sort(sortQuestions);
+    return nodes;
+  };
+
+  const getQuestionsForSection = (sectionId: string) => {
+    if (!template?.nodes) return [];
+
+    // For template-based sections, get all questions that belong to this template section
+    if (sectionId.startsWith('template-section-')) {
+      return template.nodes
+        .filter((node) =>
+          isQuestionNode(node) &&
+          node.data?.templateSection === sectionId
+        );
+    }
+
+    // For traditional sections, use the existing reachable questions logic
+    return getReachableQuestions(sectionId);
+  };
+
+  const getSections = () => {
+    if (!template?.nodes) return [];
+    const sections = template.nodes
+      .filter((n) => n.type === "sectionNode" && n.data?.sectionName)
+      .sort((a, b) => {
+        const an = parseInt(String(a.id).replace("section-", ""), 10);
+        const bn = parseInt(String(b.id).replace("section-", ""), 10);
+        return (isNaN(an) ? 9999 : an) - (isNaN(bn) ? 9999 : bn);
+      });
+
+    return sections.map((section) => ({
+      ...section,
+      questions: getQuestionsForSection(section.id),
+    }));
+  };
+
+  const getQuestionNodes = () => {
+    const sec = getSections();
+    return sec.flatMap((s: any) => s.questions);
+  };
+
+  const handleSectionChange = (i: number) => {
+    setCurrentSectionIndex(i);
+    questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // ---------------- PROGRESS & STATUS ----------------
+
+  const calculateWeightedProgress = () => {
+    const sections = getSections();
+    if (sections.length === 0) return 0;
+
+    let totalWeightedCompletion = 0;
+    let totalWeight = 0;
+
+    sections.forEach((section: any) => {
+      const sectionWeight = section.data.weight || 1;
+      const sectionQuestions = section.questions;
+
+      if (sectionQuestions.length === 0) {
+        totalWeight += sectionWeight;
+        return;
+      }
+
+      const answeredQuestions = sectionQuestions.filter((q: any) => !!answers[q.id]);
+      const sectionCompletion = (answeredQuestions.length / sectionQuestions.length) * 100;
+
+      totalWeightedCompletion += sectionCompletion * sectionWeight;
+      totalWeight += sectionWeight;
+    });
+
+    const weightedAverage = totalWeight > 0 ? totalWeightedCompletion / totalWeight : 0;
+    return Math.round(weightedAverage);
+  };
+
+  useEffect(() => {
+    if (!template?.nodes || !template?.edges || !isUserSet) return;
+    const visibleQuestions = getQuestionNodes();
+    if (currentQuestionIndex >= visibleQuestions.length && visibleQuestions.length > 0) {
+      setCurrentQuestionIndex(visibleQuestions.length - 1);
+    }
+  }, [answers, template, isUserSet, currentQuestionIndex]);
+
+  if (!mounted) return null;
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          <Card sx={{ p: 4, textAlign: "center", maxWidth: 400 }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, color: "#6b7280" }}>
+                Loading Assessment...
+              </Typography>
+              <LinearProgress sx={{ mt: 2 }} />
+            </CardContent>
+          </Card>
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  const questionNodes = getQuestionNodes();
+  const currentQuestion = questionNodes[currentQuestionIndex];
+  const progress = calculateWeightedProgress();
+
+  if (!currentQuestion) {
+    return (
+      <DashboardLayout
+      >
+        <Box
+          sx={{
+            minHeight: "100vh",
+            backgroundColor: "#fafafa",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Card sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="h6" color="error">
+              No questions found in this template
+            </Typography>
+            <Button onClick={() => router.push("/dashboard")} sx={{ mt: 2 }}>
+              Back to Dashboard
+            </Button>
+          </Card>
+        </Box>
+      </DashboardLayout>
+    );
+  }
+
+  const sections = getSections();
+  const isLastSection = currentSectionIndex === sections.length - 1;
+
+  return (
+    <DashboardLayout
+    >
+      <Box sx={{ height: "100%", backgroundColor: "#f8fafc", overflow: "auto", px: 3, pt: 1.5 }}>
+        {/* Sticky Header */}
+        <Box sx={{ backgroundColor: "transparent", position: "sticky", top: 0, zIndex: 10 }}>
+          <Box sx={{ px: 0, pt: 1.5, pb: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box>
+              <Typography variant="h5" fontWeight={600} fontFamily={"var(--font-inter), sans-serif"} sx={{ color: "#111827" }}>
+                New Assessment
+              </Typography>
+              <Typography variant="subtitle1" color="#6c757d" fontFamily={"var(--font-inter), sans-serif"}>
+                {sections[currentSectionIndex]?.data?.sectionName || template?.name || "Assessment Template"} - Started on{" "}
+                {new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+              </Typography>
+            </Box>
+            <Chip
+              label={`In Progress - ${progress}%`}
+              sx={{
+                backgroundColor: "#faf5e3",
+                color: "#eabf3f",
+                fontWeight: 700,
+                borderRadius: "8px",
+                px: 1.5,
+                height: 32,
+              }}
+            />
+          </Box>
+
+          <Box sx={{ px: 0, pb: 0 }}>
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: "#e5e7eb",
+                "& .MuiLinearProgress-bar": { backgroundColor: "#3b82f6", borderRadius: 3 },
+              }}
+            />
+          </Box>
+        </Box>
+
+        <Box ref={questionsTopRef} />
+
+        <Card
+          variant="outlined"
+          sx={{
+            borderColor: "#e5e7eb",
+            borderRadius: 2,
+            boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            mt: 2,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Tabs header (unchanged) */}
+          <Box sx={{ px: 2, pt: 1.5, bgcolor: "#fff" }}>
+            <Tabs
+              value={currentSectionIndex}
+              onChange={(_, v) => handleSectionChange(v)}
+              variant="fullWidth"
+              TabIndicatorProps={{ sx: { height: 3, borderRadius: 2, backgroundColor: "#3a7de6" } }}
+              sx={{
+                px: 0,
+                "& .MuiTabs-flexContainer": { width: "100%" },
+                "& .MuiTab-root": {
+                  minWidth: 0,
+                  flex: 1,
+                  width: "100%",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  color: "#6b6b6b",
+                  minHeight: 44,
+                  "&.Mui-selected": {
+                    color: "#000",
+                    backgroundColor: "#f5f9ff",
+                    borderRadius: "8px 8px 0 0",
+                    fontWeight: 700,
+                  },
+                },
+              }}
+            >
+              {sections.map((section: any) => (
+                <Tab key={section.id} label={section.data.sectionName} disableRipple />
+              ))}
+            </Tabs>
+          </Box>
+
+          <Divider sx={{ borderColor: "#e5e7eb" }} />
+
+          <CardContent
+            sx={{
+              p: 2.5,
+              pt: 3,
+              maxHeight: "calc(100vh - 320px)",
+              overflowY: "auto",
+              pr: 2,
+              "&::-webkit-scrollbar": { width: 8 },
+              "&::-webkit-scrollbar-track": { backgroundColor: "#e5e7eb", borderRadius: 8 },
+              "&::-webkit-scrollbar-thumb": { backgroundColor: "#3b82f6", borderRadius: 8 },
+              scrollbarColor: "#3b82f6 #e5e7eb",
+            }}
+          >
+            {sections[currentSectionIndex]?.questions.map((question: any, qIndex: number) => {
+              const endActionMsg = getEndActionForAnswer(question.id, answers[question.id]);
+
+              return (
+                <Box key={question.id} sx={{ mb: 4 }}>
+                  <Typography
+                    sx={{
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      mb: 2,
+                      color: "#1f2937",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {qIndex + 1}. {question.data.question}
+                    {question.data.isRequired && <span style={{ color: "#ef4444" }}> *</span>}
+                  </Typography>
+
+                  <QuestionInput
+                    question={question}
+                    answer={answers[question.id]}
+                    onAnswerChange={(answer) => handleAnswerChange(question.id, answer)}
+                  />
+
+                  {endActionMsg && (
+                    <Alert severity="info" sx={{ mt: 1 }}>
+                      {endActionMsg}
+                    </Alert>
+                  )}
+                </Box>
+              );
+            })}
+          </CardContent>
+
+          <Divider sx={{ borderColor: "#e5e7eb" }} />
+
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              px: 2.5,
+              py: 2,
+              bgcolor: "#fff",
+            }}
+          >
+            <Button
+              onClick={handlePreviousSection}
+              disabled={currentSectionIndex === 0}
+              variant="outlined"
+              startIcon={<ArrowBackIosNewIcon />}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                borderRadius: "10px",
+                borderWidth: 2,
+                px: 2.5,
+                py: 1,
+                borderColor: "#e5e7eb",
+                color: "#6b7280",
+                "&:hover": { borderColor: "#d1d5db", background: "#f9fafb" },
+                "&.Mui-disabled": { borderColor: "#e5e7eb", color: "#d1d5db" },
+              }}
+            >
+              Previous Section
+            </Button>
+
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Button
+                onClick={handleSaveDraft}
+                variant="outlined"
+                startIcon={<SaveOutlinedIcon />}
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 700,
+                  borderRadius: "10px",
+                  borderWidth: 2,
+                  px: 2.5,
+                  py: 1,
+                  color: "#3b82f6",
+                  borderColor: "#3b82f6",
+                  "&:hover": { borderColor: "#2f6fe0", background: "rgba(59,130,246,0.06)" },
+                }}
+              >
+                Save Draft
+              </Button>
+
+              {currentSectionIndex === getSections().length - 1 ? (
+                <Button
+                  onClick={handleSubmitAssessment}
+                  variant="contained"
+                  endIcon={<VisibilityIcon />}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: "10px",
+                    px: 2.8,
+                    py: 1.1,
+                    background: "#3b82f6",
+                    boxShadow: "0 2px 8px rgba(59,130,246,0.25)",
+                    "&:hover": { background: "#2563eb", boxShadow: "0 4px 12px rgba(59,130,246,0.35)" },
+                  }}
+                >
+                  Review
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNextSection}
+                  variant="contained"
+                  endIcon={<ArrowForwardIosIcon />}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: "10px",
+                    px: 2.8,
+                    py: 1.1,
+                    background: "#3b82f6",
+                    boxShadow: "0 2px 8px rgba(59,130,246,0.25)",
+                    "&:hover": { background: "#2563eb", boxShadow: "0 4px 12px rgba(59,130,246,0.35)" },
+                  }}
+                >
+                  Next Section
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Card>
+      </Box>
+    </DashboardLayout>
+  );
+};
+
+export default AssessmentPage;
