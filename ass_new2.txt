@@ -17,12 +17,19 @@ import {
   Divider,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import DashboardLayout from "../../../components/layout/DashboardLayout";
 import QuestionInput from "../../../components/questionnaire/QuestionInput";
+import QuestionStepper from "../../../components/assessment/QuestionStepper";
+import { useQuery } from "@apollo/client";
+import { useSelector } from "react-redux";
+import { GET_USERS_TEMPLATES_QUERY, FacilityWithServicesInput, GetUsersTemplatesData } from '../../../graphql/templates.service';
+import { RootState } from '../../../store/store';
+import { toast } from 'react-toastify';
 
 interface Template {
   id: string;
@@ -44,8 +51,34 @@ const AssessmentPage = () => {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [currentQuestionInSection, setCurrentQuestionInSection] = useState(0);
 
   const questionsTopRef = useRef<HTMLDivElement | null>(null);
+
+  // Get user data from Redux store
+  const user = useSelector((state: RootState) => state.auth.user);
+
+  // Extract facilities from user data for the API call
+  const userFacilities: FacilityWithServicesInput[] = user?.facilities?.map(facility => ({
+    facility_id: facility.facility_id,
+    services: facility.services
+  })) || [];
+
+  // GraphQL query to fetch user templates (only when needed)
+  const { data: templatesData, loading: templatesLoading, error: templatesError, refetch: refetchTemplates } = useQuery<GetUsersTemplatesData>(
+    GET_USERS_TEMPLATES_QUERY,
+    {
+      variables: {
+        facilities: userFacilities
+      },
+      fetchPolicy: 'cache-and-network',
+      skip: true, // Initially skip, we'll trigger manually when needed
+      onError: (error) => {
+        console.error('Error fetching user templates:', error);
+        toast.error('Failed to load templates. Please try again.');
+      }
+    }
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -56,8 +89,121 @@ const AssessmentPage = () => {
     if (mounted) loadTemplateFromFile();
   }, [mounted]);
 
-  // Load templates from API response (stored in sessionStorage) or fallback to local file
-  const loadTemplateFromFile = () => {
+  // Process templates and create combined template structure
+  const processTemplates = async (apiTemplates: any[]) => {
+    // Remove duplicates based on template name and only keep templates with questionnaires
+    const templatesWithQuestionnaires = apiTemplates.filter((template: any) => {
+      // Check if template has questionnaire with nodes
+      const hasQuestionnaire = template.questionnaire?.nodes &&
+                             Array.isArray(template.questionnaire.nodes) &&
+                             template.questionnaire.nodes.length > 0;
+
+      if (!hasQuestionnaire) {
+        console.log(`⚠️ Skipping template "${template.name}" - no questionnaire data`);
+        return false;
+      }
+
+      return true;
+    });
+
+    // Use a Map to deduplicate by template name (case-insensitive)
+    // Also log template IDs to help debug duplicates
+    const uniqueTemplatesMap = new Map();
+    templatesWithQuestionnaires.forEach((template: any) => {
+      const normalizedName = template.name?.trim().toLowerCase();
+      if (normalizedName && !uniqueTemplatesMap.has(normalizedName)) {
+        console.log(`✅ Adding unique template: "${template.name}" (ID: ${template.id})`);
+        uniqueTemplatesMap.set(normalizedName, template);
+      } else {
+        console.log(`⚠️ Skipping duplicate template "${template.name}" (ID: ${template.id})`);
+      }
+    });
+
+    const uniqueTemplates = Array.from(uniqueTemplatesMap.values());
+
+    console.log(`🔄 Filtered to ${uniqueTemplates.length} unique templates with questionnaires`);
+
+    if (uniqueTemplates.length === 0) {
+      console.log('❌ No valid templates with questionnaires found');
+      alert("No valid templates found. Please try creating a new assessment from the main page.");
+      router.push("/assessment");
+      return;
+    }
+
+    // Convert unique API templates into a single template with multiple sections
+    const combinedTemplate: Template = {
+      id: 'combined-assessment',
+      name: 'Multi-Template Assessment',
+      description: `Assessment with ${uniqueTemplates.length} template(s)`,
+      nodes: [],
+      edges: [],
+      status: 'Completed',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Create sections for each unique template
+    uniqueTemplates.forEach((apiTemplate: any, index: number) => {
+      console.log(`🔄 Processing template ${index + 1}: "${apiTemplate.name}"`);
+      console.log(`🔄 Template questionnaire nodes count:`, apiTemplate.questionnaire?.nodes?.length || 0);
+
+      // Create a section node for this template
+      const sectionNode = {
+        id: `template-section-${index}`,
+        type: 'sectionNode',
+        position: { x: 0, y: index * 100 },
+        data: {
+          sectionName: apiTemplate.name // "Ambulatory Surgical Center", "Outpatient Dialysis", etc.
+        }
+      };
+
+      combinedTemplate.nodes.push(sectionNode);
+      console.log(`✅ Created section node with ID: ${sectionNode.id} and name: "${sectionNode.data.sectionName}"`);
+
+      // Add all questions from this template's questionnaire
+      if (apiTemplate.questionnaire?.nodes) {
+        apiTemplate.questionnaire.nodes.forEach((node: any) => {
+          // Only add question nodes, skip other node types
+          if (node.type === 'questionNode') {
+            // Prefix node IDs to avoid conflicts between templates
+            const prefixedNode = {
+              ...node,
+              id: `template-${index}-${node.id}`,
+              data: {
+                ...node.data,
+                templateSection: `template-section-${index}` // Link to section
+              }
+            };
+            combinedTemplate.nodes.push(prefixedNode);
+          }
+        });
+      }
+
+      // Add edges from this template's questionnaire
+      if (apiTemplate.questionnaire?.edges) {
+        apiTemplate.questionnaire.edges.forEach((edge: any) => {
+          // Prefix edge IDs to avoid conflicts
+          const prefixedEdge = {
+            ...edge,
+            id: `template-${index}-${edge.id}`,
+            source: `template-${index}-${edge.source}`,
+            target: `template-${index}-${edge.target}`
+          };
+          combinedTemplate.edges.push(prefixedEdge);
+        });
+      }
+    });
+
+    console.log('🔄 Combined template:', combinedTemplate);
+    console.log('🔄 Number of sections:', uniqueTemplates.length);
+    console.log('🔄 Total nodes:', combinedTemplate.nodes.length);
+
+    setTemplate(combinedTemplate);
+    setLoading(false);
+  };
+
+  // Load templates from API response (stored in sessionStorage) or fetch from API
+  const loadTemplateFromFile = async () => {
     try {
       // First try to get templates from API response (stored in sessionStorage)
       const apiTemplatesData = sessionStorage.getItem('selectedTemplates');
@@ -68,126 +214,69 @@ const AssessmentPage = () => {
         console.log('🔄 Template names found:', apiTemplates.map((t: any) => t.name));
 
         if (apiTemplates && Array.isArray(apiTemplates) && apiTemplates.length > 0) {
-          // Remove duplicates based on template name and only keep templates with questionnaires
-          const templatesWithQuestionnaires = apiTemplates.filter((template: any) => {
-            // Check if template has questionnaire with nodes
-            const hasQuestionnaire = template.questionnaire?.nodes &&
-                                   Array.isArray(template.questionnaire.nodes) &&
-                                   template.questionnaire.nodes.length > 0;
-
-            if (!hasQuestionnaire) {
-              console.log(`⚠️ Skipping template "${template.name}" - no questionnaire data`);
-              return false;
-            }
-
-            return true;
-          });
-
-          // Use a Map to deduplicate by template name (case-insensitive)
-          // Also log template IDs to help debug duplicates
-          const uniqueTemplatesMap = new Map();
-          templatesWithQuestionnaires.forEach((template: any) => {
-            const normalizedName = template.name?.trim().toLowerCase();
-            if (normalizedName && !uniqueTemplatesMap.has(normalizedName)) {
-              console.log(`✅ Adding unique template: "${template.name}" (ID: ${template.id})`);
-              uniqueTemplatesMap.set(normalizedName, template);
-            } else {
-              console.log(`⚠️ Skipping duplicate template "${template.name}" (ID: ${template.id})`);
-            }
-          });
-
-          const uniqueTemplates = Array.from(uniqueTemplatesMap.values());
-
-          console.log(`🔄 Filtered to ${uniqueTemplates.length} unique templates with questionnaires`);
-
-          if (uniqueTemplates.length === 0) {
-            console.log('❌ No valid templates with questionnaires found');
-            alert("No valid templates found. Please try creating a new assessment from the main page.");
-            router.push("/assessment");
-            return;
-          } else {
-            // Convert unique API templates into a single template with multiple sections
-            const combinedTemplate: Template = {
-              id: 'combined-assessment',
-              name: 'Multi-Template Assessment',
-              description: `Assessment with ${uniqueTemplates.length} template(s)`,
-              nodes: [],
-              edges: [],
-              status: 'Completed',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            };
-
-            // Create sections for each unique template
-            uniqueTemplates.forEach((apiTemplate: any, index: number) => {
-              console.log(`🔄 Processing template ${index + 1}: "${apiTemplate.name}"`);
-              console.log(`🔄 Template questionnaire nodes count:`, apiTemplate.questionnaire?.nodes?.length || 0);
-
-              // Create a section node for this template
-              const sectionNode = {
-                id: `template-section-${index}`,
-                type: 'sectionNode',
-                position: { x: 0, y: index * 100 },
-                data: {
-                  sectionName: apiTemplate.name // "Ambulatory Surgical Center", "Outpatient Dialysis", etc.
-                }
-              };
-
-              combinedTemplate.nodes.push(sectionNode);
-              console.log(`✅ Created section node with ID: ${sectionNode.id} and name: "${sectionNode.data.sectionName}"`);
-
-              // Add all questions from this template's questionnaire
-              if (apiTemplate.questionnaire?.nodes) {
-                apiTemplate.questionnaire.nodes.forEach((node: any) => {
-                  // Only add question nodes, skip other node types
-                  if (node.type === 'questionNode') {
-                    // Prefix node IDs to avoid conflicts between templates
-                    const prefixedNode = {
-                      ...node,
-                      id: `template-${index}-${node.id}`,
-                      data: {
-                        ...node.data,
-                        templateSection: `template-section-${index}` // Link to section
-                      }
-                    };
-                    combinedTemplate.nodes.push(prefixedNode);
-                  }
-                });
-              }
-
-              // Add edges from this template's questionnaire
-              if (apiTemplate.questionnaire?.edges) {
-                apiTemplate.questionnaire.edges.forEach((edge: any) => {
-                  // Prefix edge IDs to avoid conflicts
-                  const prefixedEdge = {
-                    ...edge,
-                    id: `template-${index}-${edge.id}`,
-                    source: `template-${index}-${edge.source}`,
-                    target: `template-${index}-${edge.target}`
-                  };
-                  combinedTemplate.edges.push(prefixedEdge);
-                });
-              }
-            });
-
-          console.log('🔄 Combined template:', combinedTemplate);
-          console.log('🔄 Number of sections:', apiTemplates.length);
-          console.log('🔄 Total nodes:', combinedTemplate.nodes.length);
-
-          setTemplate(combinedTemplate);
-          setLoading(false);
+          await processTemplates(apiTemplates);
           // Clear the templates from sessionStorage after loading
           sessionStorage.removeItem('selectedTemplates');
           return;
-          }
         }
       }
 
-      // No templates found in sessionStorage
-      console.log('❌ No templates found in sessionStorage');
-      alert("No templates found. Please try creating a new assessment from the main page.");
-      router.push("/assessment");
-      return;
+      // No templates found in sessionStorage, try to fetch from API
+      console.log('❌ No templates found in sessionStorage, attempting to fetch from API...');
+
+      // Check if user has facilities
+      if (userFacilities.length === 0) {
+        console.log('❌ No user facilities available for API call');
+        alert("No facilities found for your account. Please contact your administrator.");
+        router.push("/assessment");
+        return;
+      }
+
+      try {
+        // Fetch templates from API
+        const result = await refetchTemplates();
+        const apiTemplates = result.data?.usersTemplates?.scenarioVersions || [];
+
+        // Filter for active templates with questionnaire data
+        const availableTemplates = apiTemplates.filter(
+          (template) =>
+            template.status === 'ACTIVE' &&
+            template.isLatest &&
+            template.questionnaire &&
+            template.questionnaire.nodes &&
+            Array.isArray(template.questionnaire.nodes) &&
+            template.questionnaire.nodes.length > 0
+        );
+
+        if (availableTemplates.length === 0) {
+          console.log('❌ No active templates with questionnaires found from API');
+          alert("No templates available for assessment. Please contact your administrator.");
+          router.push("/assessment");
+          return;
+        }
+
+        // Convert API templates to the format expected by the assessment page
+        const formattedTemplates = availableTemplates.map(template => ({
+          id: template._id,
+          name: template.scenario.name,
+          questionnaire: template.questionnaire,
+          version: template.version,
+          facilities: template.facilities,
+          services: template.services
+        }));
+
+        console.log('✅ Successfully fetched templates from API:', formattedTemplates.length);
+
+        // Process the fetched templates using the same logic as sessionStorage templates
+        await processTemplates(formattedTemplates);
+        return;
+
+      } catch (error) {
+        console.error('❌ Error fetching templates from API:', error);
+        alert("Failed to load templates. Please try creating a new assessment from the main page.");
+        router.push("/assessment");
+        return;
+      }
     } catch (e) {
       console.error("❌ Error loading template from file:", e);
       alert("Failed to load template");
@@ -209,14 +298,48 @@ const AssessmentPage = () => {
     const sections = getSections();
     if (currentSectionIndex < sections.length - 1) {
       setCurrentSectionIndex((p) => p + 1);
+      setCurrentQuestionInSection(0); // Reset to first question in new section
       questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
   const handlePreviousSection = () => {
     if (currentSectionIndex > 0) {
       setCurrentSectionIndex((p) => p - 1);
+      setCurrentQuestionInSection(0); // Reset to first question in new section
       questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  const handleNextQuestion = () => {
+    const sections = getSections();
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection) return;
+
+    const sectionQuestions = currentSection.questions;
+    if (currentQuestionInSection < sectionQuestions.length - 1) {
+      // Move to next question in current section
+      setCurrentQuestionInSection(prev => prev + 1);
+    } else {
+      // Last question in section, move to next section
+      handleNextSection();
+    }
+    questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionInSection > 0) {
+      // Move to previous question in current section
+      setCurrentQuestionInSection(prev => prev - 1);
+    } else if (currentSectionIndex > 0) {
+      // First question in section, move to last question of previous section
+      const sections = getSections();
+      const previousSection = sections[currentSectionIndex - 1];
+      if (previousSection) {
+        setCurrentSectionIndex(prev => prev - 1);
+        setCurrentQuestionInSection(previousSection.questions.length - 1);
+      }
+    }
+    questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   const handleSaveDraft = async () => console.log("Saving draft...", answers);
   const handleSubmitAssessment = async () => console.log("Submitting assessment...", answers);
@@ -268,6 +391,7 @@ const AssessmentPage = () => {
 
     const expected: string[] = [];
 
+    // Collect all possible expected values for this edge
     if (edge?.data?.optionText) expected.push(edge.data.optionText);
 
     const sourceNode = template?.nodes.find((n) => n.id === edge.source);
@@ -280,18 +404,80 @@ const AssessmentPage = () => {
 
     if (edge?.label) expected.push(edge.label);
 
-    if (Array.isArray(answer)) return answer.some((a) => expected.includes(a));
-    return expected.includes(answer);
+    // Check if answer matches any expected value
+    let matches = false;
+    if (Array.isArray(answer)) {
+      matches = answer.some((a) => expected.includes(a));
+    } else {
+      matches = expected.includes(answer);
+    }
+
+    console.log(`🔍 Edge condition check: answer="${answer}", expected=[${expected.join(', ')}], matches=${matches}`);
+    return matches;
+  };
+
+  // Check if a section is completed (all questions answered)
+  const isSectionCompleted = (sectionId: string): boolean => {
+    const section = sections.find((s: any) => s.id === sectionId);
+    if (!section) return false;
+
+    const sectionQuestions = section.questions || [];
+    if (sectionQuestions.length === 0) return true;
+
+    // Check if all questions in the section have answers
+    return sectionQuestions.every((question: any) => {
+      const answer = answers[question.id];
+      return answer !== undefined && answer !== null && answer !== "";
+    });
   };
 
   const getEndActionForAnswer = (sourceId: string, answer: any): string | null => {
     if (!template || answer === undefined || answer === null || answer === "") return null;
     const outgoing = template.edges.filter((e) => e.source === sourceId);
+
+    console.log(`🔍 Checking end action for question ${sourceId} with answer "${answer}"`);
+    console.log(`🔍 Found ${outgoing.length} outgoing edges:`, outgoing.map(e => ({
+      target: e.target,
+      optionText: e.data?.optionText || e.label,
+      sourceHandle: e.sourceHandle
+    })));
+
+    // Check if there's a matching edge for this answer
+    let hasMatchingEdge = false;
+    let hasMatchingEdgeWithTarget = false;
+
     for (const e of outgoing) {
-      if (checkEdgeCondition(e, answer) && !e.target) {
-        return e.data?.endAction || e.label || null;
+      if (checkEdgeCondition(e, answer)) {
+        hasMatchingEdge = true;
+        console.log(`✅ Found matching edge for "${answer}":`, {
+          target: e.target,
+          optionText: e.data?.optionText || e.label,
+          hasTarget: !!e.target
+        });
+
+        // If the edge has no target, it's an end action
+        if (!e.target) {
+          const endAction = e.data?.endAction || e.label || "Refer to Consultant";
+          console.log(`🔚 End action triggered: ${endAction}`);
+          return endAction;
+        } else {
+          hasMatchingEdgeWithTarget = true;
+        }
       }
     }
+
+    // If we found a matching edge but it has no target, or no matching edge at all
+    if (hasMatchingEdge && !hasMatchingEdgeWithTarget) {
+      console.log(`🔄 Matching edge found but no target - referring to consultant`);
+      return "Refer to Consultant";
+    }
+
+    // If no matching edge found for this answer, it means this option has no next question
+    if (!hasMatchingEdge && answer) {
+      console.log(`🔄 No matching edge found for question ${sourceId} with answer "${answer}" - referring to consultant`);
+      return "Refer to Consultant";
+    }
+
     return null;
   };
 
@@ -443,6 +629,62 @@ const AssessmentPage = () => {
 
   const handleSectionChange = (i: number) => {
     setCurrentSectionIndex(i);
+    setCurrentQuestionInSection(0); // Reset to first question in new section
+    questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Helper functions for single question display
+  const getCurrentQuestion = () => {
+    const sections = getSections();
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection || !currentSection.questions) return null;
+    return currentSection.questions[currentQuestionInSection] || null;
+  };
+
+  const getCurrentSectionQuestions = () => {
+    const sections = getSections();
+    const currentSection = sections[currentSectionIndex];
+    return currentSection?.questions || [];
+  };
+
+  const getAnsweredQuestionsInCurrentSection = () => {
+    const sectionQuestions = getCurrentSectionQuestions();
+    const answeredIndices = new Set<number>();
+    sectionQuestions.forEach((question, index) => {
+      if (answers[question.id] !== undefined && answers[question.id] !== null && answers[question.id] !== '') {
+        answeredIndices.add(index);
+      }
+    });
+    return answeredIndices;
+  };
+
+  const isFirstQuestion = () => {
+    return currentSectionIndex === 0 && currentQuestionInSection === 0;
+  };
+
+  const isLastQuestion = () => {
+    const sections = getSections();
+    const isLastSection = currentSectionIndex === sections.length - 1;
+    const currentSection = sections[currentSectionIndex];
+    const isLastQuestionInSection = currentSection && currentQuestionInSection === currentSection.questions.length - 1;
+    return isLastSection && isLastQuestionInSection;
+  };
+
+  const isLastQuestionInSection = () => {
+    const currentSection = getSections()[currentSectionIndex];
+    return currentSection && currentQuestionInSection === currentSection.questions.length - 1;
+  };
+
+  const isCurrentQuestionAnswered = () => {
+    const currentQuestion = getCurrentQuestion();
+    if (!currentQuestion) return false;
+
+    const answer = answers[currentQuestion.id];
+    return answer !== undefined && answer !== null && answer !== '';
+  };
+
+  const handleQuestionClick = (questionIndex: number) => {
+    setCurrentQuestionInSection(questionIndex);
     questionsTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -482,6 +724,19 @@ const AssessmentPage = () => {
       setCurrentQuestionIndex(visibleQuestions.length - 1);
     }
   }, [answers, template, isUserSet, currentQuestionIndex]);
+
+  // Reset question index when section changes
+  useEffect(() => {
+    setCurrentQuestionInSection(0);
+  }, [currentSectionIndex]);
+
+  // Ensure current question index is valid for the current section
+  useEffect(() => {
+    const currentSectionQuestions = getCurrentSectionQuestions();
+    if (currentQuestionInSection >= currentSectionQuestions.length && currentSectionQuestions.length > 0) {
+      setCurrentQuestionInSection(currentSectionQuestions.length - 1);
+    }
+  }, [currentSectionIndex, currentQuestionInSection, template]);
 
   if (!mounted) return null;
 
@@ -545,16 +800,16 @@ const AssessmentPage = () => {
   return (
     <DashboardLayout
     >
-      <Box sx={{ height: "100%", backgroundColor: "#f8fafc", overflow: "auto", px: 3, pt: 1.5 }}>
+      <Box sx={{ height: "100%", backgroundColor: "#f8fafc", overflow: "auto" }}>
         {/* Sticky Header */}
         <Box sx={{ backgroundColor: "transparent", position: "sticky", top: 0, zIndex: 10 }}>
-          <Box sx={{ px: 0, pt: 1.5, pb: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box sx={{ px: 0, pt: 0, pb: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <Box>
               <Typography variant="h5" fontWeight={600} fontFamily={"var(--font-inter), sans-serif"} sx={{ color: "#111827" }}>
                 New Assessment
               </Typography>
               <Typography variant="subtitle1" color="#6c757d" fontFamily={"var(--font-inter), sans-serif"}>
-                {sections[currentSectionIndex]?.data?.sectionName || template?.name || "Assessment Template"} - Started on{" "}
+                {sections[currentSectionIndex]?.data?.sectionName || "Assessment"} - Started on{" "}
                 {new Date().toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
               </Typography>
             </Box>
@@ -604,7 +859,13 @@ const AssessmentPage = () => {
               value={currentSectionIndex}
               onChange={(_, v) => handleSectionChange(v)}
               variant="fullWidth"
-              TabIndicatorProps={{ sx: { height: 3, borderRadius: 2, backgroundColor: "#3a7de6" } }}
+              TabIndicatorProps={{
+                sx: {
+                  height: 3,
+                  borderRadius: 2,
+                  backgroundColor: "#3a7de6" // Always blue for active tab
+                }
+              }}
               sx={{
                 px: 0,
                 "& .MuiTabs-flexContainer": { width: "100%" },
@@ -617,17 +878,63 @@ const AssessmentPage = () => {
                   color: "#6b6b6b",
                   minHeight: 44,
                   "&.Mui-selected": {
-                    color: "#000",
-                    backgroundColor: "#f5f9ff",
+                    color: "#3a7de6",
+                    backgroundColor: "#f0f7ff",
                     borderRadius: "8px 8px 0 0",
                     fontWeight: 700,
                   },
                 },
               }}
             >
-              {sections.map((section: any) => (
-                <Tab key={section.id} label={section.data.sectionName} disableRipple />
-              ))}
+              {sections.map((section: any, index: number) => {
+                const isCompleted = isSectionCompleted(section.id);
+                const isSelected = currentSectionIndex === index;
+
+                return (
+                  <Tab
+                    key={section.id}
+                    disableRipple
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {/* Show icon only for non-selected tabs */}
+                        {!isSelected && (
+                          <>
+                            {isCompleted ? (
+                              <CheckCircleIcon
+                                sx={{
+                                  fontSize: 18,
+                                  color: "#22c55e"
+                                }}
+                              />
+                            ) : (
+                              <HourglassEmptyIcon
+                                sx={{
+                                  fontSize: 18,
+                                  color: "#eab308"
+                                }}
+                              />
+                            )}
+                          </>
+                        )}
+                        <Typography
+                          sx={{
+                            fontSize: '14px',
+                            fontWeight: isSelected ? 700 : 600,
+                            color: isSelected
+                              ? "#3a7de6" // Blue for active tab
+                              : isCompleted
+                                ? "#22c55e" // Green for completed inactive tabs
+                                : "#eab308", // Yellow for incomplete inactive tabs
+                            textTransform: 'none',
+                          }}
+                        >
+                          {section.data.sectionName}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                );
+              })}
             </Tabs>
           </Box>
 
@@ -646,38 +953,60 @@ const AssessmentPage = () => {
               scrollbarColor: "#3b82f6 #e5e7eb",
             }}
           >
-            {sections[currentSectionIndex]?.questions.map((question: any, qIndex: number) => {
-              const endActionMsg = getEndActionForAnswer(question.id, answers[question.id]);
+            {/* Question Stepper */}
+            <QuestionStepper
+              totalQuestions={getCurrentSectionQuestions().length}
+              currentQuestionIndex={currentQuestionInSection}
+              answeredQuestions={getAnsweredQuestionsInCurrentSection()}
+              sectionName={sections[currentSectionIndex]?.data?.sectionName || ""}
+              onQuestionClick={handleQuestionClick}
+            />
+
+            {/* Current Question Display */}
+            {(() => {
+              const currentQuestion = getCurrentQuestion();
+              if (!currentQuestion) {
+                return (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      No questions available in this section
+                    </Typography>
+                  </Box>
+                );
+              }
+
+              const endActionMsg = getEndActionForAnswer(currentQuestion.id, answers[currentQuestion.id]);
 
               return (
-                <Box key={question.id} sx={{ mb: 4 }}>
+                <Box sx={{ my: 6 }}>
                   <Typography
                     sx={{
-                      fontSize: "16px",
+                      fontSize: "18px",
                       fontWeight: 600,
-                      mb: 2,
+                      mb: 4,
+                      mt: 2,
                       color: "#1f2937",
                       lineHeight: 1.5,
                     }}
                   >
-                    {qIndex + 1}. {question.data.question}
-                    {question.data.isRequired && <span style={{ color: "#ef4444" }}> *</span>}
+                    {currentQuestionInSection + 1}. {currentQuestion.data.question}
+                    {currentQuestion.data.isRequired && <span style={{ color: "#ef4444" }}> *</span>}
                   </Typography>
 
                   <QuestionInput
-                    question={question}
-                    answer={answers[question.id]}
-                    onAnswerChange={(answer) => handleAnswerChange(question.id, answer)}
+                    question={currentQuestion}
+                    answer={answers[currentQuestion.id]}
+                    onAnswerChange={(answer) => handleAnswerChange(currentQuestion.id, answer)}
                   />
 
                   {endActionMsg && (
-                    <Alert severity="info" sx={{ mt: 1 }}>
+                    <Alert severity="info" sx={{ mt: 3 }}>
                       {endActionMsg}
                     </Alert>
                   )}
                 </Box>
               );
-            })}
+            })()}
           </CardContent>
 
           <Divider sx={{ borderColor: "#e5e7eb" }} />
@@ -692,9 +1021,10 @@ const AssessmentPage = () => {
               bgcolor: "#fff",
             }}
           >
+            {/* Left side - Previous Question button */}
             <Button
-              onClick={handlePreviousSection}
-              disabled={currentSectionIndex === 0}
+              onClick={handlePreviousQuestion}
+              disabled={isFirstQuestion()}
               variant="outlined"
               startIcon={<ArrowBackIosNewIcon />}
               sx={{
@@ -710,9 +1040,10 @@ const AssessmentPage = () => {
                 "&.Mui-disabled": { borderColor: "#e5e7eb", color: "#d1d5db" },
               }}
             >
-              Previous Section
+              Previous Question
             </Button>
 
+            {/* Right side - Save Draft and Next/Review buttons */}
             <Box sx={{ display: "flex", gap: 2 }}>
               <Button
                 onClick={handleSaveDraft}
@@ -730,12 +1061,13 @@ const AssessmentPage = () => {
                   "&:hover": { borderColor: "#2f6fe0", background: "rgba(59,130,246,0.06)" },
                 }}
               >
-                Save Draft
+                Save as Draft
               </Button>
 
-              {currentSectionIndex === getSections().length - 1 ? (
+              {isLastQuestion() ? (
                 <Button
                   onClick={handleSubmitAssessment}
+                  disabled={!isCurrentQuestionAnswered()}
                   variant="contained"
                   endIcon={<VisibilityIcon />}
                   sx={{
@@ -744,16 +1076,25 @@ const AssessmentPage = () => {
                     borderRadius: "10px",
                     px: 2.8,
                     py: 1.1,
-                    background: "#3b82f6",
-                    boxShadow: "0 2px 8px rgba(59,130,246,0.25)",
-                    "&:hover": { background: "#2563eb", boxShadow: "0 4px 12px rgba(59,130,246,0.35)" },
+                    background: !isCurrentQuestionAnswered() ? "#d1d5db" : "#3b82f6",
+                    color: !isCurrentQuestionAnswered() ? "#9ca3af" : "#ffffff",
+                    boxShadow: !isCurrentQuestionAnswered() ? "none" : "0 2px 8px rgba(59,130,246,0.25)",
+                    "&:hover": {
+                      background: !isCurrentQuestionAnswered() ? "#d1d5db" : "#2563eb",
+                      boxShadow: !isCurrentQuestionAnswered() ? "none" : "0 4px 12px rgba(59,130,246,0.35)"
+                    },
+                    "&.Mui-disabled": {
+                      background: "#d1d5db",
+                      color: "#9ca3af"
+                    }
                   }}
                 >
                   Review
                 </Button>
-              ) : (
+              ) : isLastQuestionInSection() ? (
                 <Button
                   onClick={handleNextSection}
+                  disabled={!isCurrentQuestionAnswered()}
                   variant="contained"
                   endIcon={<ArrowForwardIosIcon />}
                   sx={{
@@ -762,12 +1103,47 @@ const AssessmentPage = () => {
                     borderRadius: "10px",
                     px: 2.8,
                     py: 1.1,
-                    background: "#3b82f6",
-                    boxShadow: "0 2px 8px rgba(59,130,246,0.25)",
-                    "&:hover": { background: "#2563eb", boxShadow: "0 4px 12px rgba(59,130,246,0.35)" },
+                    background: !isCurrentQuestionAnswered() ? "#d1d5db" : "#3b82f6",
+                    color: !isCurrentQuestionAnswered() ? "#9ca3af" : "#ffffff",
+                    boxShadow: !isCurrentQuestionAnswered() ? "none" : "0 2px 8px rgba(59,130,246,0.25)",
+                    "&:hover": {
+                      background: !isCurrentQuestionAnswered() ? "#d1d5db" : "#2563eb",
+                      boxShadow: !isCurrentQuestionAnswered() ? "none" : "0 4px 12px rgba(59,130,246,0.35)"
+                    },
+                    "&.Mui-disabled": {
+                      background: "#d1d5db",
+                      color: "#9ca3af"
+                    }
                   }}
                 >
                   Next Section
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNextQuestion}
+                  disabled={!isCurrentQuestionAnswered()}
+                  variant="contained"
+                  endIcon={<ArrowForwardIosIcon />}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: "10px",
+                    px: 2.8,
+                    py: 1.1,
+                    background: !isCurrentQuestionAnswered() ? "#d1d5db" : "#3b82f6",
+                    color: !isCurrentQuestionAnswered() ? "#9ca3af" : "#ffffff",
+                    boxShadow: !isCurrentQuestionAnswered() ? "none" : "0 2px 8px rgba(59,130,246,0.25)",
+                    "&:hover": {
+                      background: !isCurrentQuestionAnswered() ? "#d1d5db" : "#2563eb",
+                      boxShadow: !isCurrentQuestionAnswered() ? "none" : "0 4px 12px rgba(59,130,246,0.35)"
+                    },
+                    "&.Mui-disabled": {
+                      background: "#d1d5db",
+                      color: "#9ca3af"
+                    }
+                  }}
+                >
+                  Next Question
                 </Button>
               )}
             </Box>
